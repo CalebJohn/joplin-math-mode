@@ -5,5 +5,5 @@ It's better to demonstrate with an example.
 
 ![Screenshot of using math mode to plan a road trip](./assets/road_trip.png)
 
-Based on[literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
+Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
 

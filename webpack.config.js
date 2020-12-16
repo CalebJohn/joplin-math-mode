@@ -38,9 +38,8 @@ const manifestPath = `${srcDir}/manifest.json`;
 const manifest = readManifest(manifestPath);
 const archiveFilePath = path.resolve(__dirname, `${manifest.id}.jpl`);
 
-module.exports = {
+var config = {
 	mode: 'production',
-	entry: './src/index.ts',
 	target: 'node',
 	module: {
 		rules: [
@@ -57,6 +56,11 @@ module.exports = {
 		},
 		extensions: ['.tsx', '.ts', '.js'],
 	},
+};
+
+var index = Object.assign({}, config, {
+	name: 'index',
+	entry: './src/index.ts',
 	output: {
 		filename: 'index.js',
 		path: distDir,
@@ -77,8 +81,24 @@ module.exports = {
 				},
 			],
 		}),
+	],
+});
+
+var contentScript = Object.assign({}, config, {
+	name: 'contentScript',
+	entry: './src/mathMode.js',
+	output: {
+		filename: 'mathMode.js',
+		path: distDir,
+		library: 'default',
+		libraryTarget: 'commonjs',
+		libraryExport: 'default',
+	},
+	plugins: [
 		new WebpackOnBuildPlugin(function() {
 			createPluginArchive(distDir, archiveFilePath);
 		}),
 	],
-};
+});
+
+module.exports = [index, contentScript];
