@@ -50,10 +50,12 @@ function plugin(CodeMirror) {
 		for (var i = lineno; i < cm.lineCount(); i++) {
 			var line = cm.getLineHandle(i);
 
-			if (line.text === '```') {
-				return { start: start, end: i };
+			if (line.text.indexOf('```') === 0) {
+				if (line.text.trim() === '```') {
+					return { start: start, end: i };
+				}
+				return null;
 			}
-
 		}
 
 		return null;
