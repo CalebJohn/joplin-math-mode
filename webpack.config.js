@@ -86,7 +86,7 @@ var index = Object.assign({}, config, {
 
 var contentScript = Object.assign({}, config, {
 	name: 'contentScript',
-	entry: './src/mathMode.js',
+	entry: './src/mathMode.ts',
 	output: {
 		filename: 'mathMode.js',
 		path: distDir,

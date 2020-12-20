@@ -1,8 +1,18 @@
 var math = require('mathjs');
 
+interface PluginState {
+	scope: object;
+};
+
+interface Block {
+	start: number;
+	end: number;
+}
+
 function plugin(CodeMirror) {
 	CodeMirror.defineMode('joplin-literate-math', (config) => {
 		return CodeMirror.multiplexingMode(
+			// joplin-markdown is the CodeMirror mode that joplin uses
 			CodeMirror.getMode(config, { name: 'joplin-markdown' }),
 			{open: "```math", close: "```",
 				mode: CodeMirror.getMode(config, { name: 'joplin-inner-math' }),
@@ -14,15 +24,19 @@ function plugin(CodeMirror) {
 	// where start is the first math line of a block
 	// and end is the close tag of the block (last line + 1)
 	// otherwise returns false
-	function find_block(cm, lineno) {
-		if (!lineno) lineno = cm.lastLine();
+	function find_block(cm: any, lineno: number): Block {
+		if (!lineno && lineno !== 0) lineno = cm.lastLine();
 
 		var start = -1;
 		// A line is in a block if it is wrapped in a ```math and ```
+		// We start at lineno - 1 to ensure that event the trailing
+		// ``` will be treated as part of a block
 		for (var i = lineno; i >= cm.firstLine(); i--) {
 			var line = cm.getLineHandle(i);
 
-			if (line.text === '```') {
+			// if the lineno points to ``` it can still be in a block
+			// but only if any line above is ``` will we quit
+			if (line.text === '```' && i !== lineno) {
 				return null;
 			}
 			else if (line.text === '```math') {
@@ -47,7 +61,7 @@ function plugin(CodeMirror) {
 
 	// We sometimes we will want to find all the math blocks in order
 	// to re-process an entire note
-	function process_all(cm) {
+	function process_all(cm: any) {
 		clear_widgets(cm, { start: cm.firstLine(), end: cm.lineCount() });
 
 		for (var i = cm.firstLine(); i < cm.lineCount(); i++) {
@@ -58,11 +72,11 @@ function plugin(CodeMirror) {
 			process_block(cm, block)
 
 			// Jump to end of the block
-			i = block.end;
+			i = block.end + 1;
 		}
 	}
 
-	function process_block(cm, block) {
+	function process_block(cm: any, block: Block) {
 		clear_widgets(cm, block);
 
 		// scope is global to the note
@@ -98,32 +112,64 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	function clear_widgets(cm, block) {
-		for (var i = block.start; i < block.end; i++) {
-			var line = cm.lineInfo(i);
-			if (line.widgets) {
-				cm.removeLineClass(line.handle, 'text');
-				for (var wid of line.widgets) {
-					if (wid.className === 'math-result')
-						wid.clear();
-				}
+	function clear_math_widgets(cm: any, line: any) {
+		if (line.widgets) {
+			cm.removeLineClass(line.handle, 'text');
+
+			for (var wid of line.widgets) {
+				if (wid.className === 'math-result')
+					wid.clear();
 			}
 		}
 	}
 
-	// On each change we're going to scan for 
-	function on_change(cm, change) {
-		var block = find_block(cm, change.from.line);
+	function clear_widgets(cm: any, block: Block) {
+		for (var i = block.start; i < block.end; i++) {
+			var line = cm.lineInfo(i);
 
-		if (block) {
-			// Because the entire document shares one scope, 
-			// we will re-process the entire document for each change
-			process_all(cm);
-
-
-			// // Eventually we might want an option for per-block processing/scope
-			// process_block(cm, block);
+			clear_math_widgets(cm, line);
 		}
+	}
+
+	// If there are lines that don't belong to a block and contain math-result
+	// widgets, then we should clear them
+	function clean_up(cm: any) {
+		for (var i = cm.firstLine(); i < cm.lineCount(); i++) {
+			if (!find_block(cm, i)) {
+				var line = cm.lineInfo(i);
+
+				clear_math_widgets(cm, line);
+			}
+		}
+	}
+
+	function is_note_switch(cm: any, change: any) {
+		return (change.from.line === cm.firstLine() &&
+			change.to.line === change.removed.length - 1 &&
+			change.origin === 'setValue'
+		);
+	}
+
+	// On each change we're going to scan for 
+	function on_change(cm: any, change: any) {
+		clean_up(cm);
+
+		if (is_note_switch(cm, change)) {
+			cm.state.mathMode = { scope: {} };
+		}
+
+		// Because the entire document shares one scope, 
+		// we will re-process the entire document for each change
+		process_all(cm);
+
+		// Eventually we might want an option for per-block processing/scope
+		//
+		// We might also want to use the change.from.line and change.to.line
+		// to make this more efficient, but I'm avoiding the complexity for now
+		// (I ran into an issue when doing a full note switch where the new note
+		// had a math block lower in the new note than the entire length of the 
+		// original note, so the original logic which only looked for blocks within
+		// the from and to of the change didn't work)
 	}
 
 	// I ran into an odd bug dueing development where the function where wouldn't be called
@@ -158,7 +204,6 @@ module.exports = {
 						text: `.math-result {
 											opacity: 0.75;
 											display: inline-block;
-											padding-bottom: 5px;
 											padding-left: 15px;
 										}
 										.math-cm-line {
