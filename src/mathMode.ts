@@ -105,10 +105,10 @@ function plugin(CodeMirror) {
 			result = '=> ' + result;
 			
 			// Eventually we might want to support non-inline results
-			cm.addLineClass(line, 'text', 'math-cm-line');
+			cm.addLineClass(line, 'text', 'math-input-line');
 
 			var node = document.createTextNode(result);
-			cm.addLineWidget(line, node, { className: 'math-result', handleMouseEvents: true });
+			cm.addLineWidget(line, node, { className: 'math-result-line', handleMouseEvents: true });
 		}
 	}
 
@@ -117,7 +117,7 @@ function plugin(CodeMirror) {
 			cm.removeLineClass(line.handle, 'text');
 
 			for (var wid of line.widgets) {
-				if (wid.className === 'math-result')
+				if (wid.className === 'math-result-line')
 					wid.clear();
 			}
 		}
@@ -131,7 +131,7 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	// If there are lines that don't belong to a block and contain math-result
+	// If there are lines that don't belong to a block and contain math-result-line
 	// widgets, then we should clear them
 	function clean_up(cm: any) {
 		for (var i = cm.firstLine(); i < cm.lineCount(); i++) {
@@ -156,6 +156,15 @@ function plugin(CodeMirror) {
 
 		if (is_note_switch(cm, change)) {
 			cm.state.mathMode = { scope: {} };
+		}
+
+		// Most changes are the user typing a single character
+		// If this doesn't happen inside a math block, we shouldn't re-process
+		if (change.from.line === change.to.line) {
+			var block = find_block(cm, change.from.line);
+
+			// If this minor change didn't affect a math block then we quit early
+			if (!block) return;
 		}
 
 		// Because the entire document shares one scope, 
@@ -201,12 +210,12 @@ module.exports = {
 				return [
 					{ mime: 'text/css',
 						inline: true,
-						text: `.math-result {
+						text: `.math-result-line {
 											opacity: 0.75;
 											display: inline-block;
 											padding-left: 15px;
 										}
-										.math-cm-line {
+										.math-input-line {
 											float: left;
 										}
 							`

@@ -17,3 +17,4 @@ Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) f
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 - [ ] Math input on any line that starts with =, or has the form `variable =`
+- [ ] Fix math mode invoking greedily after \`\`\`math when there is a code/math block later in the document
