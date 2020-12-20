@@ -47,13 +47,14 @@ function plugin(CodeMirror) {
 
 		if (start === -1) return null;
 
-		for (var i = lineno; i < cm.lineCount(); i++) {
+		for (var i = start; i < cm.lineCount(); i++) {
 			var line = cm.getLineHandle(i);
 
 			if (line.text.indexOf('```') === 0) {
 				if (line.text.trim() === '```') {
 					return { start: start, end: i };
 				}
+
 				return null;
 			}
 		}
@@ -63,8 +64,9 @@ function plugin(CodeMirror) {
 
 	// We sometimes we will want to find all the math blocks in order
 	// to re-process an entire note
-	function process_all(cm: any) {
+	function reprocess_all(cm: any) {
 		clear_widgets(cm, { start: cm.firstLine(), end: cm.lineCount() });
+		cm.state.mathMode.scope = {};
 
 		for (var i = cm.firstLine(); i < cm.lineCount(); i++) {
 			var block = find_block(cm, i);
@@ -145,20 +147,9 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	function is_note_switch(cm: any, change: any) {
-		return (change.from.line === cm.firstLine() &&
-			change.to.line === change.removed.length - 1 &&
-			change.origin === 'setValue'
-		);
-	}
-
 	// On each change we're going to scan for 
 	function on_change(cm: any, change: any) {
 		clean_up(cm);
-
-		if (is_note_switch(cm, change)) {
-			cm.state.mathMode = { scope: {} };
-		}
 
 		// Most changes are the user typing a single character
 		// If this doesn't happen inside a math block, we shouldn't re-process
@@ -171,7 +162,7 @@ function plugin(CodeMirror) {
 
 		// Because the entire document shares one scope, 
 		// we will re-process the entire document for each change
-		process_all(cm);
+		reprocess_all(cm);
 
 		// Eventually we might want an option for per-block processing/scope
 		//
@@ -195,7 +186,7 @@ function plugin(CodeMirror) {
 		// setup
 		if (val) {
 			cm.state.mathMode = { scope: {} };
-			process_all(cm);
+			reprocess_all(cm);
 			// We need to process all blocks on the next update
 			cm.on('change', on_change);
 		}
