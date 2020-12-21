@@ -1,5 +1,5 @@
 # Math Mode
-A plugin for inputting and evaluating math in markdown code blocks. It's built on top of the excellent [mathjs](https://mathjs.org/), which means it can be used to perform symbolic calculation, vector math and can even handle units!
+A plugin for inputting and evaluating math in markdown code blocks. It's built on top of the excellent [mathjs](https://mathjs.org/), meaning it can be used to perform symbolic calculation, vector math and can even handle units!
 
 So what can it do? It's better to demonstrate with an example.
 
@@ -42,7 +42,11 @@ Try some of these!
 
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
-Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
+
+# Installation
+- Download the release .jpl file from [here](https://github.com/CalebJohn/joplin-math-mode/releases)
+- Install the downloaded plugin via `Tools -> Options -> Plugins` in Joplin
+- Remember to restart Joplin
 
 # Roadmap
 ### TODO
@@ -56,3 +60,9 @@ Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) f
 - [ ] Math input on any line that starts with =, or has the form `variable =`
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
 - [ ] Support BigNums/derivatives and other advanced operations for ergonomically
+
+
+---
+
+
+Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
