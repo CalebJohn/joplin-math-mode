@@ -5,6 +5,10 @@ So what can it do? It's better to demonstrate with an example.
 
 ![Screenshot of using math mode to plan a road trip](./assets/road_trip.png)
 
+![Screenshot of math mode examples](./assets/examples.png)
+
+Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
+
 Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
 
 # Roadmap
@@ -18,3 +22,4 @@ Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) f
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 - [ ] Math input on any line that starts with =, or has the form `variable =`
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
+- [ ] Support BigNums/derivatives and other advanced operations for ergonomically
