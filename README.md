@@ -5,7 +5,40 @@ So what can it do? It's better to demonstrate with an example.
 
 ![Screenshot of using math mode to plan a road trip](./assets/road_trip.png)
 
-![Screenshot of math mode examples](./assets/examples.png)
+
+Try some of these!
+
+		```math
+		derivative('x^2 + x', 'x') 
+		```
+		
+		```math
+		5cm + 0.2 m in inch
+		```
+		
+		```math
+		simplify(3 + 2/4)
+		```
+		
+		```math
+		i^2
+		```
+		
+		```math
+		M = [1, 3; 4, 6]
+		
+		size(M)
+		transpose(M)
+		diag(M)
+		det(M)
+		```
+		
+		```math
+		combinations(6, 3)
+		permutations(6, 3)
+		```
+
+[Screenshot of the above examples here](./assets/examples.png)
 
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
