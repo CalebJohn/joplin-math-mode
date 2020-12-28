@@ -60,6 +60,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - [ ] Math input on any line that starts with =, or has the form `variable =`
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
 - [ ] Support BigNums/derivatives and other advanced operations for ergonomically
+- [ ] Toggle the display format of results (newline/endline) (include variable name or not)
 
 
 ---

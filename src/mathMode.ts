@@ -153,7 +153,8 @@ function plugin(CodeMirror) {
 
 		// Most changes are the user typing a single character
 		// If this doesn't happen inside a math block, we shouldn't re-process
-		if (change.from.line === change.to.line) {
+		// +input means the user input (as opposed to joplin/plugin)
+		if (change.from.line === change.to.line && change.origin === "+input") {
 			var block = find_block(cm, change.from.line);
 
 			// If this minor change didn't affect a math block then we quit early
