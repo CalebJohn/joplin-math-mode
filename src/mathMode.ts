@@ -111,8 +111,13 @@ function plugin(CodeMirror) {
 			// Eventually we might want to support non-inline results
 			cm.addLineClass(line, 'text', 'math-input-line');
 
+			// Inline widgets don't work well with contenteditable so we need
+			// to give codemirror full control of the widget
+			// Unfortunately this breaks copy and paste
+			var mouseControl= cm.options.inputStyle === 'contenteditable';
+
 			var node = document.createTextNode(result);
-			cm.addLineWidget(line, node, { className: 'math-result-line', handleMouseEvents: true });
+			cm.addLineWidget(line, node, { className: 'math-result-line', handleMouseEvents: mouseControl });
 		}
 	}
 

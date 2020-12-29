@@ -57,6 +57,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - [ ] Support input in latex format (and maybe in $...$)
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Add a markdown-It renderer plugin to get the output on both views
+		- Toggle view of equation/results/both
 - [ ] Math input on any line that starts with =, or has the form `variable =`
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
 - [ ] Support BigNums/derivatives and other advanced operations for ergonomically
