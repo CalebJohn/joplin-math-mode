@@ -8,21 +8,13 @@ So what can it do? It's better to demonstrate with an example.
 
 Try some of these!
 
-	```math
-	derivative('x^2 + x', 'x') 
-	```
+	= derivative('x^2 + x', 'x')
 	
-	```math
-	5cm + 0.2 m in inch
-	```
+	= 5cm + 0.2 m in inch
 	
-	```math
-	simplify(3 + 2/4)
-	```
+	= simplify(3 + 2/4)
 	
-	```math
-	i^2
-	```
+	= i^2
 	
 	```math
 	M = [1, 3; 4, 6]
@@ -58,7 +50,6 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 		- Toggle view of equation/results/both
-- [ ] Math input on any line that starts with =, or has the form `variable =`
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
 - [ ] Support BigNums/derivatives and other advanced operations for ergonomically
 - [ ] Toggle the display format of results (newline/endline) (include variable name or not)
@@ -67,4 +58,4 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 ---
 
 
-Based on [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
+Inspired by [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
