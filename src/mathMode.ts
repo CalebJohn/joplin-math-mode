@@ -10,6 +10,7 @@ interface Block {
 }
 
 const inline_math_regex = /^=/;
+const equation_result_separator = " => ";
 
 function plugin(CodeMirror) {
 	CodeMirror.defineMode('joplin-literate-math', (config) => {
@@ -34,14 +35,14 @@ function plugin(CodeMirror) {
 		// We start at lineno - 1 to ensure that event the trailing
 		// ``` will be treated as part of a block
 		for (let i = lineno; i >= cm.firstLine(); i--) {
-			const line = cm.getLineHandle(i);
+			const line = cm.getLine(i);
 
 			// If we encounter an end of block marker
 			// then we know we wer not in a block
-			if (line.text === '```') {
+			if (line === '```') {
 				return null;
 			}
-			else if (line.text === '```math') {
+			else if (line === '```math') {
 				start = i + 1;
 				break;
 			}
@@ -50,10 +51,10 @@ function plugin(CodeMirror) {
 		if (start === -1) return null;
 
 		for (let i = start; i < cm.lineCount(); i++) {
-			const line = cm.getLineHandle(i);
+			const line = cm.getLine(i);
 
-			if (line.text.indexOf('```') === 0) {
-				if (line.text.trim() === '```') {
+			if (line.indexOf('```') === 0) {
+				if (line.trim() === '```') {
 					return { start: start, end: i - 1 };
 				}
 
@@ -65,9 +66,9 @@ function plugin(CodeMirror) {
 	}
 
 	function find_inline_math(cm: any, lineno: number): Block {
-		const line = cm.getLineHandle(lineno);
+		const line = cm.getLine(lineno);
 
-		if (line.text.match(inline_math_regex)) {
+		if (line.match(inline_math_regex)) {
 			return { start: lineno, end: lineno };
 		}
 
@@ -104,10 +105,13 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	function get_line_equation(line: any): string {
-		if (!line.text) return '';
+	function insert_math_at(cm: any, lineno: number, result: string) {
+		const line = cm.getLine(lineno);
+		cm.replaceRange(line + equation_result_separator + result, { line: lineno, ch: 0 }, { line: lineno, ch:line.length });
+	}
 
-		return line.text.replace(inline_math_regex, '');
+	function get_line_equation(line: string): string {
+		return line.replace(inline_math_regex, '');
 	}
 
 	function process_block(cm: any, block: Block) {
@@ -117,9 +121,10 @@ function plugin(CodeMirror) {
 		let scope = cm.state.mathMode.scope;
 
 		for (let i = block.start; i <= block.end; i++) {
-			const line = cm.getLineHandle(i);
+			const full_line = cm.getLine(i).split(equation_result_separator);
+			const line = full_line[0];
 
-			if (!line.text) continue;
+			if (!line) continue;
 
 			// Process one line
 			let result = '';
@@ -135,12 +140,22 @@ function plugin(CodeMirror) {
 					result = '';
 				}
 			}
-			result = '=> ' + result;
+
+			// Don't bother showing the result if it has already been inserted into the text
+			if (full_line[1]) continue;
 			
 			// Eventually we might want to support non-inline results
-			cm.addLineClass(line, 'text', 'math-input-line');
+			cm.addLineClass(i, 'text', 'math-input-line');
 
-			const node = document.createTextNode(result);
+			const node = document.createElement('div');
+			const toggle = document.createElement('button');
+			toggle.setAttribute('class', 'math-insert-button');
+			toggle.innerHTML = equation_result_separator + result;
+			toggle.onclick = () => {insert_math_at(cm, i, result);};
+			// const msg = document.createTextNode(result);
+
+			node.appendChild(toggle);
+			// node.appendChild(msg);
 			// handleMouseEvents gives control of mouse handling for the widget to codemirror
 			// This is necessary to get the cursor to be placed in the right location ofter
 			// clicking on a widget
@@ -148,15 +163,15 @@ function plugin(CodeMirror) {
 			// works on contenteditable)
 			// I'm okay with this because I want the user to be able to select a block
 			// without accidently grabbing the result
-			cm.addLineWidget(line, node, { className: 'math-result-line', handleMouseEvents: true });
+			cm.addLineWidget(i, node, { className: 'math-result-line', handleMouseEvents: true });
 		}
 	}
 
-	function clear_math_widgets(cm: any, line: any) {
-		if (line.widgets) {
-			cm.removeLineClass(line.handle, 'text');
+	function clear_math_widgets(cm: any, lineInfo: any) {
+		if (lineInfo.widgets) {
+			cm.removeLineClass(lineInfo.handle, 'text');
 
-			for (const wid of line.widgets) {
+			for (const wid of lineInfo.widgets) {
 				if (wid.className === 'math-result-line')
 					wid.clear();
 			}
@@ -246,10 +261,21 @@ module.exports = {
 						text: `.math-result-line {
 											opacity: 0.75;
 											display: inline-block;
-											padding-left: 15px;
 										}
 										.math-input-line {
 											float: left;
+										}
+										.math-insert-button {
+											background-color: inherit;
+											border: none;
+											color: inherit;
+										}
+										.math-insert-button:hover {
+											border-radius: 4px;
+											box-shadow: 1px 1px 4px 0px black;
+										}
+										.math-insert-button:active {
+											box-shadow: inset 1px 1px 4px 0px black;
 										}
 							`
 					}

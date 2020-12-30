@@ -30,8 +30,6 @@ Try some of these!
 	permutations(6, 3)
 	```
 
-[Screenshot of the above examples here](./assets/examples.png)
-
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
 
@@ -42,7 +40,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 
 # Roadmap
 ### TODO
-- [ ] Add insert button on hover for all math lines (also add one at the top of the block?)
+- [x] Add insert button on hover for all math lines (also add one at the top of the block?)
 - [ ] Support an "insert all commands in note" from the menu
 
 ### Maybe do
