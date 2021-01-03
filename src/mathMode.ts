@@ -148,14 +148,9 @@ function plugin(CodeMirror) {
 			cm.addLineClass(i, 'text', 'math-input-line');
 
 			const node = document.createElement('div');
-			const toggle = document.createElement('button');
-			toggle.setAttribute('class', 'math-insert-button');
-			toggle.innerHTML = equation_result_separator + result;
-			toggle.onclick = () => {insert_math_at(cm, i, result);};
-			// const msg = document.createTextNode(result);
+			const msg = document.createTextNode(equation_result_separator + result);
+			node.appendChild(msg);
 
-			node.appendChild(toggle);
-			// node.appendChild(msg);
 			// handleMouseEvents gives control of mouse handling for the widget to codemirror
 			// This is necessary to get the cursor to be placed in the right location ofter
 			// clicking on a widget
@@ -264,18 +259,6 @@ module.exports = {
 										}
 										.math-input-line {
 											float: left;
-										}
-										.math-insert-button {
-											background-color: inherit;
-											border: none;
-											color: inherit;
-										}
-										.math-insert-button:hover {
-											border-radius: 4px;
-											box-shadow: 1px 1px 4px 0px black;
-										}
-										.math-insert-button:active {
-											box-shadow: inset 1px 1px 4px 0px black;
 										}
 							`
 					}
