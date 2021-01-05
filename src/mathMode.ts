@@ -23,6 +23,11 @@ function plugin(CodeMirror) {
   );
 	});
 
+	CodeMirror.commands['mathMode.insertMathResult'] = function(cm: any) {
+		const { line } = cm.getCursor();
+		insert_math_at(cm, line);
+	};
+
 	// if is in a block return {start, end}
 	// where start is the first math line of a block
 	// and end is the close tag of the block (last line + 1)
@@ -88,8 +93,8 @@ function plugin(CodeMirror) {
 	// We sometimes we will want to find all the math blocks in order
 	// to re-process an entire note
 	function reprocess_all(cm: any) {
-		clear_widgets(cm, { start: cm.firstLine(), end: cm.lineCount() - 1 });
 		cm.state.mathMode.scope = {};
+		cm.state.mathMode.results = {};
 
 		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
 			const to_process = find_math(cm, i);
@@ -103,10 +108,14 @@ function plugin(CodeMirror) {
 			// running of larger blocks
 			i = to_process.end;
 		}
+
+		refresh_widgets(cm, { start: cm.firstLine(), end: cm.lineCount() - 1 });
 	}
 
-	function insert_math_at(cm: any, lineno: number, result: string) {
+	function insert_math_at(cm: any, lineno: number) {
 		const line = cm.getLine(lineno);
+		const result = cm.state.mathMode.results[lineno];
+
 		cm.replaceRange(line + equation_result_separator + result, { line: lineno, ch: 0 }, { line: lineno, ch:line.length });
 	}
 
@@ -115,8 +124,6 @@ function plugin(CodeMirror) {
 	}
 
 	function process_block(cm: any, block: Block) {
-		clear_widgets(cm, block);
-
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
 
@@ -141,8 +148,34 @@ function plugin(CodeMirror) {
 				}
 			}
 
+			cm.state.mathMode.results[i] = result;
+		}
+	}
+
+	function clear_math_widgets(cm: any, lineInfo: any) {
+		if (lineInfo.widgets) {
+			cm.removeLineClass(lineInfo.handle, 'text');
+
+			for (const wid of lineInfo.widgets) {
+				if (wid.className === 'math-result-line')
+					wid.clear();
+			}
+		}
+	}
+
+	function refresh_widgets(cm: any, block: Block) {
+		for (let i = block.start; i <= block.end; i++) {
+			const line = cm.lineInfo(i);
+
+			clear_math_widgets(cm, line);
+
+			const full_line = line.text.split(equation_result_separator);
+			const result = cm.state.mathMode.results[i];
+
 			// Don't bother showing the result if it has already been inserted into the text
 			if (full_line[1]) continue;
+
+			if (!result) continue;
 			
 			// Eventually we might want to support non-inline results
 			cm.addLineClass(i, 'text', 'math-input-line');
@@ -159,25 +192,6 @@ function plugin(CodeMirror) {
 			// I'm okay with this because I want the user to be able to select a block
 			// without accidently grabbing the result
 			cm.addLineWidget(i, node, { className: 'math-result-line', handleMouseEvents: true });
-		}
-	}
-
-	function clear_math_widgets(cm: any, lineInfo: any) {
-		if (lineInfo.widgets) {
-			cm.removeLineClass(lineInfo.handle, 'text');
-
-			for (const wid of lineInfo.widgets) {
-				if (wid.className === 'math-result-line')
-					wid.clear();
-			}
-		}
-	}
-
-	function clear_widgets(cm: any, block: Block) {
-		for (let i = block.start; i <= block.end; i++) {
-			const line = cm.lineInfo(i);
-
-			clear_math_widgets(cm, line);
 		}
 	}
 
@@ -235,7 +249,7 @@ function plugin(CodeMirror) {
     }
 		// setup
 		if (val) {
-			cm.state.mathMode = { scope: {} };
+			cm.state.mathMode = { scope: {}, results: {} };
 			reprocess_all(cm);
 			// We need to process all blocks on the next update
 			cm.on('change', on_change);
