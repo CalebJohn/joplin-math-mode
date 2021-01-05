@@ -49,8 +49,9 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 		- Toggle view of equation/results/both
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
-- [ ] Support BigNums/derivatives and other advanced operations for ergonomically
+- [ ] Support BigNums/derivatives and other advanced operations more ergonomically
 - [ ] Toggle the display format of results (newline/endline) (include variable name or not)
+- [ ] Add global settings to the settings menu, and support local (file or block) settings using [frontmatter](https://discourse.joplinapp.org/t/plugin-math-mode/13254/6)
 
 
 ---
