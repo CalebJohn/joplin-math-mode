@@ -49,6 +49,7 @@ To publish the plugin, add it to npmjs.com by running `npm publish`. Later on, a
 
 In general all this is done automatically by the plugin generator, which will set the name and keywords of package.json, and will put the right files in the "publish" directory. But if something doesn't work and your plugin doesn't appear in the repository, double-check the above conditions.
 
+
 ## Updating the plugin framework
 
 To update the plugin framework, run `npm run update`.

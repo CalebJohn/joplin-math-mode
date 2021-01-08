@@ -83,6 +83,7 @@ function createPluginArchive(sourceDir, destPath) {
 		.map(f => f.substr(sourceDir.length + 1));
 
 	if (!distFiles.length) throw new Error('Plugin archive was not created because the "dist" directory is empty');
+
 	fs.removeSync(destPath);
 
 	tar.create(
