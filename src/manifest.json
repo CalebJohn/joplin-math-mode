@@ -6,8 +6,5 @@
 	"name": "Math Mode",
 	"description": "A calculator for Joplin's code blocks.",
 	"author": "Caleb John",
-	"homepage_url": "github.com/CalebJohn",
-	"content_scripts": [
-		"mathMode"
-	]
+	"homepage_url": "github.com/CalebJohn"
 }
