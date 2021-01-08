@@ -40,7 +40,8 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 
 # Roadmap
 ### TODO
-- [x] Add insert button on context menu for all math lines (can also be done at the block level)
+- [ ] Add insert button on context menu for all math lines
+	- Done but awaiting plugin system fixes
 - [ ] Support an "insert all commands in note" from the menu
 
 ### Maybe do

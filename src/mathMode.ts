@@ -1,4 +1,4 @@
-const math = require('mathjs');
+const mathjs = require('mathjs');
 
 interface PluginState {
 	scope: object;
@@ -11,11 +11,14 @@ interface Block {
 
 const inline_math_regex = /^=/;
 const equation_result_separator = " => ";
+const equation_result_collapsed = " |> ";
 
 function plugin(CodeMirror) {
 	CodeMirror.defineMode('joplin-literate-math', (config) => {
 		return CodeMirror.multiplexingMode(
 			// joplin-markdown is the CodeMirror mode that joplin uses
+			// the inner style (cm-math-line) isn't used yet, but
+			// I may do something with it in the future
 			CodeMirror.getMode(config, { name: 'joplin-markdown' }),
 			{open: "```math", close: "```",
 				mode: CodeMirror.getMode(config, { name: 'joplin-inner-math' }),
@@ -94,7 +97,7 @@ function plugin(CodeMirror) {
 	// to re-process an entire note
 	function reprocess_all(cm: any) {
 		cm.state.mathMode.scope = {};
-		cm.state.mathMode.results = {};
+		cm.state.mathMode.lineData = {};
 
 		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
 			const to_process = find_math(cm, i);
@@ -114,7 +117,7 @@ function plugin(CodeMirror) {
 
 	function insert_math_at(cm: any, lineno: number) {
 		const line = cm.getLine(lineno);
-		const result = cm.state.mathMode.results[lineno];
+		const result = cm.state.mathMode.lineData[lineno];
 
 		cm.replaceRange(line + equation_result_separator + result, { line: lineno, ch: 0 }, { line: lineno, ch:line.length });
 	}
@@ -126,6 +129,8 @@ function plugin(CodeMirror) {
 	function process_block(cm: any, block: Block) {
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
+		let config = Object.assign({}, cm.state.mathMode.defaultConfig);
+		const math = mathjs.create(mathjs.all, { number: 'BigNumber' });
 
 		for (let i = block.start; i <= block.end; i++) {
 			const full_line = cm.getLine(i).split(equation_result_separator);
@@ -133,12 +138,43 @@ function plugin(CodeMirror) {
 
 			if (!line) continue;
 
+			// This is configuration, not math
+			if (line.includes(':')) {
+				const [ key, value ] = line.split(':', 2);
+				config[key.trim()] = value.trim();
+				cm.state.mathMode.lineData[i] = { isConfig: true };
+
+				if (config.operation === 'evaluate') {
+					math.config({
+							number: 'BigNumber',
+							precision: 64
+					});
+				}
+				else if (config.operation === 'simplify') {
+					math.config({
+							number: 'number'
+					});
+				}
+				// TODO: Input validation
+				continue;
+			}
+
 			// Process one line
 			let result = '';
 			try {
 				const p = math.parse(get_line_equation(line));
-				result = p.evaluate(scope);
-				if (p.name)
+
+				if (config.operation === 'evaluate')
+					result = p.evaluate(scope);
+				else if (config.operation === 'simplify')
+					result = math.simplify(p)
+
+				result = math.format(result, {
+					precision: Number(config.precision),
+					notation: config.notation,
+				});
+
+				if (p.name && config.result !== 'simple')
 					result = p.name + ': ' + result;
 			} catch(e) {
 				result = e.message;
@@ -148,13 +184,23 @@ function plugin(CodeMirror) {
 				}
 			}
 
-			cm.state.mathMode.results[i] = result;
+			cm.state.mathMode.lineData[i] = {
+				result: result,
+				inputHidden: config.expression === 'hidden',
+				resultHidden: config.result === 'hidden',
+				inline: config.location === 'inline',
+				alignRight: config.align === 'right',
+			}
 		}
 	}
 
 	function clear_math_widgets(cm: any, lineInfo: any) {
+		// This could potentially cause a conflict with another plugin
+		cm.removeLineClass(lineInfo.handle, 'wrap', 'cm-comment');
+
 		if (lineInfo.widgets) {
-			cm.removeLineClass(lineInfo.handle, 'text');
+			cm.removeLineClass(lineInfo.handle, 'text', 'math-hidden');
+			cm.removeLineClass(lineInfo.handle, 'text', 'math-input-inline');
 
 			for (const wid of lineInfo.widgets) {
 				if (wid.className === 'math-result-line')
@@ -170,19 +216,34 @@ function plugin(CodeMirror) {
 			clear_math_widgets(cm, line);
 
 			const full_line = line.text.split(equation_result_separator);
-			const result = cm.state.mathMode.results[i];
+			const lineData = cm.state.mathMode.lineData[i];
 
 			// Don't bother showing the result if it has already been inserted into the text
 			if (full_line[1]) continue;
 
-			if (!result) continue;
-			
-			// Eventually we might want to support non-inline results
-			cm.addLineClass(i, 'text', 'math-input-line');
+			if (!lineData) continue;
 
-			const node = document.createElement('div');
-			const msg = document.createTextNode(equation_result_separator + result);
-			node.appendChild(msg);
+			if (lineData.isConfig) {
+				cm.addLineClass(i, 'wrap', 'cm-comment');
+				continue;
+			}
+
+			if (lineData.resultHidden) continue;
+			
+			if (lineData.inputHidden)
+				cm.addLineClass(i, 'text', 'math-hidden');
+			else if (lineData.inline)
+				cm.addLineClass(i, 'text', 'math-input-inline');
+
+
+			const marker = lineData.inputHidden ? equation_result_collapsed : equation_result_separator;
+
+			const res = document.createElement('div');
+			const node = document.createTextNode(marker + lineData.result);
+			res.appendChild(node);
+
+			if (lineData.alignRight)
+				res.setAttribute('class', 'math-result-right');
 
 			// handleMouseEvents gives control of mouse handling for the widget to codemirror
 			// This is necessary to get the cursor to be placed in the right location ofter
@@ -191,7 +252,7 @@ function plugin(CodeMirror) {
 			// works on contenteditable)
 			// I'm okay with this because I want the user to be able to select a block
 			// without accidently grabbing the result
-			cm.addLineWidget(i, node, { className: 'math-result-line', handleMouseEvents: true });
+			cm.addLineWidget(i, res, { className: 'math-result-line', handleMouseEvents: true });
 		}
 	}
 
@@ -224,9 +285,15 @@ function plugin(CodeMirror) {
 			if (!block && !prev) return;
 		}
 
+		
+		if (cm.state.mathMode.timer)
+			clearTimeout(cm.state.mathMode.timer);
 		// Because the entire document shares one scope, 
 		// we will re-process the entire document for each change
-		reprocess_all(cm);
+		cm.state.mathMode.timer = setTimeout(() => {
+			reprocess_all(cm);
+			cm.state.mathMode.timer = null;
+		}, 300);
 
 		// Eventually we might want an option for per-block processing/scope
 		//
@@ -249,7 +316,20 @@ function plugin(CodeMirror) {
     }
 		// setup
 		if (val) {
-			cm.state.mathMode = { scope: {}, results: {} };
+			cm.state.mathMode = {
+				scope: {},
+				lineData: {},
+				defaultConfig: {
+					operation: 'evaluate',
+					expression: 'shown',
+					result: 'verbose',
+					location: 'inline',
+					notation: 'auto',
+					precision: '4',
+					align: 'left',
+				},
+			};
+
 			reprocess_all(cm);
 			// We need to process all blocks on the next update
 			cm.on('change', on_change);
@@ -269,10 +349,17 @@ module.exports = {
 						inline: true,
 						text: `.math-result-line {
 											opacity: 0.75;
-											display: inline-block;
+											display: block;
 										}
-										.math-input-line {
+										.math-result-right {
+											padding-right: 5px;
+											text-align: right;
+										}
+										.math-input-inline {
 											float: left;
+										}
+										.math-hidden {
+											display: none;
 										}
 							`
 					}
