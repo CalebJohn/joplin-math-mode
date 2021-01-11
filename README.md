@@ -12,8 +12,6 @@ Try some of these!
 	
 	= 5cm + 0.2 m in inch
 	
-	= simplify(3 + 2/4)
-	
 	= i^2
 	
 	```math
@@ -37,6 +35,29 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - Download the release .jpl file from [here](https://github.com/CalebJohn/joplin-math-mode/releases)
 - Install the downloaded plugin via `Tools -> Options -> Plugins` in Joplin
 - Remember to restart Joplin
+
+# Configuration
+Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The supported settings are (defaults listed first):
+
+	```math
+	global: no | yes
+	simplify: no | yes
+	hide: no | expression | result
+	verbose: yes | no
+	inline: yes | no
+	notation: auto | exponential | engineering
+	precision: Any number > 0
+	align: left | right
+	```
+
+	Where `global` determines if the following settings (within the same block) will apply to all the following blocks.
+	`simplify` will direct the math engine to simplify rather than solve expressions.
+	`hide` will hide either a math expression or result
+	`verbose` determines if just the result of the expression should be shown, or the variable name as well
+	`inline` should the result be placed on the same line as the expression, or below
+	`notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results
+	`precision` the number of decimal places to show, 0 for all
+	`align` place the result on the left or right of the editor window
 
 # Roadmap
 ### TODO

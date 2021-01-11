@@ -31,6 +31,29 @@ function plugin(CodeMirror) {
 		insert_math_at(cm, line);
 	};
 
+
+	// Eventually we want to set this based on the Joplin settings
+	const defaultConfig = {
+		global: 'no',
+		simplify: 'no',
+		hide: 'no',
+		verbose: 'yes',
+		inline: 'yes',
+		notation: 'auto',
+		precision: '4',
+		align: 'left',
+	};
+
+	function truthy(s: string) {
+		s = s.toLowerCase();
+		return s.startsWith('t') || s.startsWith('y') || s === '1';
+	}
+
+	function falsey(s: string) {
+		s = s.toLowerCase();
+		return s.startsWith('f') || s.startsWith('n') || s === '0';
+	}
+
 	// if is in a block return {start, end}
 	// where start is the first math line of a block
 	// and end is the close tag of the block (last line + 1)
@@ -99,14 +122,14 @@ function plugin(CodeMirror) {
 		cm.state.mathMode.scope = {};
 		cm.state.mathMode.lineData = {};
 
-		let defaultConfig = Object.assign({}, cm.state.mathMode.defaultConfig);
+		let noteConfig = Object.assign({}, defaultConfig);
 
 		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
 			const to_process = find_math(cm, i);
 
 			if (!to_process) continue;
 
-			process_block(cm, to_process, defaultConfig)
+			process_block(cm, to_process, noteConfig)
 
 			// Jump to end of the block
 			// This does nothing for inline math, and prevents duplicated
@@ -128,11 +151,10 @@ function plugin(CodeMirror) {
 		return line.replace(inline_math_regex, '');
 	}
 
-	function process_block(cm: any, block: Block, defaultConfig: any) {
+	function process_block(cm: any, block: Block, noteConfig: any) {
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
-		// Assume scope is block scope unless it's changed
-		let config = Object.assign({}, defaultConfig);
+		let config = Object.assign({}, noteConfig);
 		const math = mathjs.create(mathjs.all, { number: 'BigNumber' });
 
 		for (let i = block.start; i <= block.end; i++) {
@@ -142,23 +164,26 @@ function plugin(CodeMirror) {
 			if (!line) continue;
 
 			// This is configuration, not math
+			// current system is fairly simplistic (maybe even ugly)
+			// but it's small enough now that I can justify it
+			// remember to re-evaulate this if/when things get more complex
 			if (line.includes(':')) {
 				const [ key, value ] = line.split(':', 2);
 				config[key.trim()] = value.trim();
 				cm.state.mathMode.lineData[i] = { isConfig: true };
 
-				if (config.operation === 'evaluate') {
+				if (falsey(config.simplify)) {
 					math.config({
 							number: 'BigNumber',
 							precision: 64
 					});
 				}
-				else if (config.operation === 'simplify') {
+				else {
 					math.config({
 							number: 'number'
 					});
 				}
-				// TODO: Input validation
+
 				continue;
 			}
 
@@ -167,9 +192,9 @@ function plugin(CodeMirror) {
 			try {
 				const p = math.parse(get_line_equation(line));
 
-				if (config.operation === 'evaluate')
+				if (falsey(config.simplify))
 					result = p.evaluate(scope);
-				else if (config.operation === 'simplify')
+				else
 					result = math.simplify(p)
 
 				result = math.format(result, {
@@ -177,7 +202,7 @@ function plugin(CodeMirror) {
 					notation: config.notation,
 				});
 
-				if (p.name && config.result !== 'simple')
+				if (p.name && truthy(config.verbose))
 					result = p.name + ': ' + result;
 			} catch(e) {
 				result = e.message;
@@ -189,15 +214,15 @@ function plugin(CodeMirror) {
 
 			cm.state.mathMode.lineData[i] = {
 				result: result,
-				inputHidden: config.expression === 'hidden',
-				resultHidden: config.result === 'hidden',
-				inline: config.location === 'inline',
+				inputHidden: config.hide === 'expression',
+				resultHidden: config.hide === 'result',
+				inline: truthy(config.inline),
 				alignRight: config.align === 'right',
 			}
 		}
 
-		if (config.scope && config.scope === 'note') {
-			defaultConfig = Object.assign(defaultConfig, config, {scope: 'block'});
+		if (truthy(config.global)) {
+			noteConfig = Object.assign(noteConfig, config, {global: 'block'});
 		}
 	}
 
@@ -295,9 +320,10 @@ function plugin(CodeMirror) {
 		
 		if (cm.state.mathMode.timer)
 			clearTimeout(cm.state.mathMode.timer);
+
+		cm.state.mathMode.timer = setTimeout(() => {
 		// Because the entire document shares one scope, 
 		// we will re-process the entire document for each change
-		cm.state.mathMode.timer = setTimeout(() => {
 			reprocess_all(cm);
 			cm.state.mathMode.timer = null;
 		}, 300);
@@ -326,15 +352,6 @@ function plugin(CodeMirror) {
 			cm.state.mathMode = {
 				scope: {},
 				lineData: {},
-				defaultConfig: {
-					operation: 'evaluate',
-					expression: 'shown',
-					result: 'verbose',
-					location: 'inline',
-					notation: 'auto',
-					precision: '4',
-					align: 'left',
-				},
 			};
 
 			reprocess_all(cm);
