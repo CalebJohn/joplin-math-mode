@@ -52,13 +52,20 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 
 Where
 `global` determines if the following settings (within the same block) will apply to all the following blocks.
+
 `simplify` will direct the math engine to simplify rather than solve expressions.
-`hide` will hide either a math expression or result
-`verbose` determines if just the result of the expression should be shown, or the variable name as well
-`inline` should the result be placed on the same line as the expression, or below
-`notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results
-`precision` the number of decimal places to show, 0 for all
-`align` place the result on the left or right of the editor window
+
+`hide` will hide either a math expression or result.
+
+`verbose` determines if just the result of the expression should be shown, or the variable name as well.
+
+`inline` should the result be placed on the same line as the expression, or below.
+
+`notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results.
+
+`precision` the number of decimal places to show, 0 for all.
+
+`align` place the result on the left or right of the editor window.
 
 # Roadmap
 ### TODO
