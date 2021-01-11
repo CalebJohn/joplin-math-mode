@@ -50,14 +50,15 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 	align: left | right
 	```
 
-	Where `global` determines if the following settings (within the same block) will apply to all the following blocks.
-	`simplify` will direct the math engine to simplify rather than solve expressions.
-	`hide` will hide either a math expression or result
-	`verbose` determines if just the result of the expression should be shown, or the variable name as well
-	`inline` should the result be placed on the same line as the expression, or below
-	`notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results
-	`precision` the number of decimal places to show, 0 for all
-	`align` place the result on the left or right of the editor window
+Where
+`global` determines if the following settings (within the same block) will apply to all the following blocks.
+`simplify` will direct the math engine to simplify rather than solve expressions.
+`hide` will hide either a math expression or result
+`verbose` determines if just the result of the expression should be shown, or the variable name as well
+`inline` should the result be placed on the same line as the expression, or below
+`notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results
+`precision` the number of decimal places to show, 0 for all
+`align` place the result on the left or right of the editor window
 
 # Roadmap
 ### TODO
@@ -71,9 +72,7 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 		- Toggle view of equation/results/both
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
-- [ ] Support BigNums/derivatives and other advanced operations more ergonomically
-- [ ] Toggle the display format of results (newline/endline) (include variable name or not)
-- [ ] Add global settings to the settings menu, and support local (file or block) settings using [frontmatter](https://discourse.joplinapp.org/t/plugin-math-mode/13254/6)
+- [ ] Add global settings to the settings menu
 
 
 ---
