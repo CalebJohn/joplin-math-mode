@@ -99,12 +99,14 @@ function plugin(CodeMirror) {
 		cm.state.mathMode.scope = {};
 		cm.state.mathMode.lineData = {};
 
+		let defaultConfig = Object.assign({}, cm.state.mathMode.defaultConfig);
+
 		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
 			const to_process = find_math(cm, i);
 
 			if (!to_process) continue;
 
-			process_block(cm, to_process)
+			process_block(cm, to_process, defaultConfig)
 
 			// Jump to end of the block
 			// This does nothing for inline math, and prevents duplicated
@@ -126,10 +128,11 @@ function plugin(CodeMirror) {
 		return line.replace(inline_math_regex, '');
 	}
 
-	function process_block(cm: any, block: Block) {
+	function process_block(cm: any, block: Block, defaultConfig: any) {
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
-		let config = Object.assign({}, cm.state.mathMode.defaultConfig);
+		// Assume scope is block scope unless it's changed
+		let config = Object.assign({}, defaultConfig);
 		const math = mathjs.create(mathjs.all, { number: 'BigNumber' });
 
 		for (let i = block.start; i <= block.end; i++) {
@@ -191,6 +194,10 @@ function plugin(CodeMirror) {
 				inline: config.location === 'inline',
 				alignRight: config.align === 'right',
 			}
+		}
+
+		if (config.scope && config.scope === 'note') {
+			defaultConfig = Object.assign(defaultConfig, config, {scope: 'block'});
 		}
 	}
 
@@ -357,6 +364,9 @@ module.exports = {
 										}
 										.math-input-inline {
 											float: left;
+										}
+										.CodeMirror pre.CodeMirror-line.math-input-inline {
+											padding-right: 10px;
 										}
 										.math-hidden {
 											display: none;
