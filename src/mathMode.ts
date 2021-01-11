@@ -343,10 +343,10 @@ function plugin(CodeMirror) {
 	// The fix for me was to set the option to true in codeMirrorOptions instead
 	CodeMirror.defineOption('enable-math-mode', false, function(cm, val, old) {
 		// Cleanup
-    if (old && old != CodeMirror.Init) {
+		if (old && old != CodeMirror.Init) {
 			cm.state.mathMode = null;
-      cm.off("change", on_change);
-    }
+			cm.off("change", on_change);
+		}
 		// setup
 		if (val) {
 			cm.state.mathMode = {
