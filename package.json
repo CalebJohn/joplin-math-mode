@@ -1,6 +1,7 @@
 {
   "name": "joplin-plugin-math-mode",
   "version": "0.2.0",
+	"homepage": "https://github.com/CalebJohn/joplin-math-mode",
   "description": "",
   "scripts": {
     "dist": "webpack",

@@ -3,7 +3,7 @@ A plugin for inputting and evaluating math in markdown code blocks. It's built o
 
 So what can it do? It's better to demonstrate with an example.
 
-![Screenshot of using math mode to plan a road trip](./examples/road_trip.png)
+![Screenshot of using math mode to plan a road trip](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples/road_trip.png)
 
 
 Try some of these!
@@ -28,7 +28,7 @@ Try some of these!
 	permutations(6, 3)
 	```
 
-View all examples in [the examples folder](./examples). If you have an example of your own, please consider adding it to the examples directory, or sending it my way to have added. Thanks!
+View all examples in [the examples folder](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples). If you have an example of your own, please consider adding it to the examples directory, or sending it my way to have added. Thanks!
 
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
