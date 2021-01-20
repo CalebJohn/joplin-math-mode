@@ -3,7 +3,7 @@ A plugin for inputting and evaluating math in markdown code blocks. It's built o
 
 So what can it do? It's better to demonstrate with an example.
 
-![Screenshot of using math mode to plan a road trip](./assets/road_trip.png)
+![Screenshot of using math mode to plan a road trip](./examples/road_trip.png)
 
 
 Try some of these!
@@ -28,13 +28,15 @@ Try some of these!
 	permutations(6, 3)
 	```
 
+View all examples in [the examples folder](./examples). If you have an example of your own, please consider adding it to the examples directory, or sending it my way to have added. Thanks!
+
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
 
 # Installation
-- Download the release .jpl file from [here](https://github.com/CalebJohn/joplin-math-mode/releases)
-- Install the downloaded plugin via `Tools -> Options -> Plugins` in Joplin
-- Remember to restart Joplin
+- Go to `Tools -> Options -> Plugins`
+- Search for "Math Mode" in the search box
+- Click Install and restart Joplin
 
 # Configuration
 Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The supported settings are (defaults listed first):
@@ -69,15 +71,16 @@ Where
 
 # Roadmap
 ### TODO
+- [ ] Add a markdown-It renderer plugin to get the output on both views
+- [ ] Add syntax or a method for sum calculations
 - [ ] Add insert button on context menu for all math lines
 	- Done but awaiting plugin system fixes
 - [ ] Support an "insert all commands in note" from the menu
 
-### Maybe do
+### Ideas
+There is no plan to implement any of these ideas, but there might be eventually.
 - [ ] Support input in latex format (and maybe in $...$)
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
-- [ ] Add a markdown-It renderer plugin to get the output on both views
-		- Toggle view of equation/results/both
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
 - [ ] Add global settings to the settings menu
 
