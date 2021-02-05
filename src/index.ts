@@ -4,7 +4,7 @@ import { MenuItemLocation } from 'api/types';
 
 joplin.plugins.register({
 	onStart: async function() {
-		await joplin.plugins.registerContentScript(
+		await joplin.contentScripts.register(
 			ContentScriptType.CodeMirrorPlugin,
 			'literate-math-mode',
 			'./mathMode.js'

@@ -9,7 +9,9 @@ interface Block {
 	end: number;
 }
 
-const inline_math_regex = /^=/;
+type BlockType = '+' | '-';
+
+const inline_math_regex = /^(\+|\-)?=(?=[^=])/;
 const equation_result_separator = " => ";
 const equation_result_collapsed = " |> ";
 
@@ -96,19 +98,43 @@ function plugin(CodeMirror) {
 		return null;
 	}
 
-	function find_inline_math(cm: any, lineno: number): Block {
-		const line = cm.getLine(lineno);
+	function find_inline_block(cm: any, lineno: number): Block {
+		if (!lineno && lineno !== 0) lineno = cm.lastLine();
 
-		if (line.match(inline_math_regex)) {
-			return { start: lineno, end: lineno };
+		let start = -1;
+
+		for (let i = lineno; i >= cm.firstLine(); i--) {
+			const line = cm.getLine(i);
+
+			if (line.match(inline_math_regex)) {
+				start = i;
+			} else {
+				break;
+			}
 		}
 
-		return null;
+		if (start === -1) return null;
+
+		let end = -1;
+
+		for (let i = start; i < cm.lineCount(); i++) {
+			const line = cm.getLine(i);
+
+			if (line.match(inline_math_regex)) {
+				end = i;
+			} else {
+				break;
+			}
+		}
+
+		if (end === -1) return null;
+
+		return { start, end };
 	}
 
 	function find_math(cm: any, lineno: number): Block {
 		const block = find_block(cm, lineno);
-		const inline = find_inline_math(cm, lineno);
+		const inline = find_inline_block(cm, lineno);
 
 		// It's possible that a user may input an inline math style line into a block
 		// and we don't want that to prevent this system from finding the block
@@ -151,17 +177,47 @@ function plugin(CodeMirror) {
 		return line.replace(inline_math_regex, '');
 	}
 
+	function get_sum_type(line: string): BlockType {
+		const match = inline_math_regex.exec(line)
+
+		if (match && match.length > 1 && match[1] === '-')
+			return '-';
+
+		return '+';
+	}
+
+	function math_contains_assignment(parsed: any, name: string) {
+		const filtered = parsed.filter(function (n) {
+			return n.isAssignmentNode && n.name === name
+		});
+
+		return filtered.length > 0;
+	}
+
+	function math_contains_symbol(parsed: any, name: string) {
+		const filtered = parsed.filter(function (n) {
+			return n.isSymbolNode && n.name === name
+		});
+
+		return filtered.length > 0;
+	}
+
 	function process_block(cm: any, block: Block, noteConfig: any) {
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
 		let config = Object.assign({}, noteConfig);
 		const math = mathjs.create(mathjs.all, { number: 'BigNumber' });
+		let block_total = '';
 
 		for (let i = block.start; i <= block.end; i++) {
 			const full_line = cm.getLine(i).split(equation_result_separator);
 			const line = full_line[0];
 
-			if (!line) continue;
+			// This is an empty line, ignore it and reset the total counter
+			if (!line) {
+				block_total = '';
+				continue;
+			}
 
 			// This is configuration, not math
 			// current system is fairly simplistic (maybe even ugly)
@@ -191,17 +247,40 @@ function plugin(CodeMirror) {
 			let result = '';
 			try {
 				const p = math.parse(get_line_equation(line));
+				// Allow the user to redefine the total variable if they want
+				const localScope = Object.assign({total: block_total}, scope);
 
+				// Evaluate the Expression
 				if (falsey(config.simplify))
-					result = p.evaluate(scope);
+					result = p.evaluate(localScope);
 				else
 					result = math.simplify(p)
 
+				if (result && !(math_contains_symbol(p, 'total'))) {
+					const sum_char = get_sum_type(line);
+					// An error can occur when the types don't match up
+					// To revocer, restart the sum counter
+					try {
+						block_total = math.parse(`${block_total} ${block_total!=='' ? sum_char: ''} ${result}`).evaluate(localScope);
+					}
+					catch(err) {
+						block_total = result;
+					}
+				}
+
+				// If the sum variable wasn't modified, clear it
+				if (!math_contains_assignment(p, 'total'))
+					delete localScope['total'];
+				// Update the scope
+				scope = Object.assign(scope, localScope);
+
+				// Format the output
 				result = math.format(result, {
 					precision: Number(config.precision),
 					notation: config.notation,
 				});
 
+				// Attach a name if necessary
 				if (p.name && truthy(config.verbose))
 					result = p.name + ': ' + result;
 			} catch(e) {
