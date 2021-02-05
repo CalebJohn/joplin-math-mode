@@ -72,7 +72,7 @@ Where
 # Roadmap
 ### TODO
 - [ ] Add a markdown-It renderer plugin to get the output on both views
-- [ ] Add syntax or a method for sum calculations
+- [x] Add syntax or a method for sum calculations
 - [ ] Add insert button on context menu for all math lines
 	- Done but awaiting plugin system updates
 - [ ] Support an "insert all commands in note" from the menu
