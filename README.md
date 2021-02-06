@@ -44,6 +44,7 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 	```math
 	global: no | yes
 	simplify: no | yes
+	bignumber: no | yes
 	hide: no | expression | result
 	verbose: yes | no
 	inline: yes | no
@@ -56,6 +57,8 @@ Where
 `global` determines if the following settings (within the same block) will apply to all the following blocks.
 
 `simplify` will direct the math engine to simplify rather than solve expressions.
+
+`bignumber` will us the mathjs [`BigNumber`](https://mathjs.org/docs/datatypes/bignumbers.html) with 128 bit precision. `bignumber` and `simplify` are incompatible.
 
 `hide` will hide either a math expression or result.
 

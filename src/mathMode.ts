@@ -38,6 +38,7 @@ function plugin(CodeMirror) {
 	const defaultConfig = {
 		global: 'no',
 		simplify: 'no',
+		bignumber: 'no',
 		hide: 'no',
 		verbose: 'yes',
 		inline: 'yes',
@@ -206,7 +207,7 @@ function plugin(CodeMirror) {
 		// scope is global to the note
 		let scope = cm.state.mathMode.scope;
 		let config = Object.assign({}, noteConfig);
-		const math = mathjs.create(mathjs.all, { number: 'BigNumber' });
+		const math = mathjs.create(mathjs.all, {});
 		let block_total = '';
 
 		for (let i = block.start; i <= block.end; i++) {
@@ -228,10 +229,10 @@ function plugin(CodeMirror) {
 				config[key.trim()] = value.trim();
 				cm.state.mathMode.lineData[i] = { isConfig: true };
 
-				if (falsey(config.simplify)) {
+				if (truthy(config.bignumber)) {
 					math.config({
 							number: 'BigNumber',
-							precision: 64
+							precision: 128
 					});
 				}
 				else {
