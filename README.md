@@ -79,16 +79,13 @@ Where
 ### TODO
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 - [x] Add syntax or a method for sum calculations
-- [ ] Add configuration to settings menu
+- [x] Add configuration to settings menu
 
 ### Ideas
 There is no plan to implement any of these ideas, but there might be eventually.
 - [ ] Support input in latex format (and maybe in $...$)
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
-- [ ] Add insert button on context menu for all math lines
-	- Done but awaiting plugin system updates
-- [ ] Support an "insert all commands in note" from the menu
 
 
 ---

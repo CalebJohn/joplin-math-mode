@@ -13,7 +13,7 @@ const inline_math_regex = /^(\+|\-)?=(?=[^=])/;
 const equation_result_separator = " => ";
 const equation_result_collapsed = " |> ";
 
-function plugin(CodeMirror) {
+function plugin(CodeMirror, context) {
 	CodeMirror.defineMode('joplin-literate-math', (config) => {
 		return CodeMirror.multiplexingMode(
 			// joplin-markdown is the CodeMirror mode that joplin uses
@@ -25,20 +25,6 @@ function plugin(CodeMirror) {
 				delimStyle: 'comment', innerStyle: 'math-line'}
   );
 	});
-
-	// Eventually we want to set this based on the Joplin settings
-	const defaultConfig = {
-		global: 'no',
-		simplify: 'no',
-		bignumber: 'no',
-		displaytotal: 'no',
-		hide: 'no',
-		verbose: 'yes',
-		inline: 'yes',
-		notation: 'auto',
-		precision: '4',
-		align: 'left',
-	};
 
 	const math = mathjs.create(mathjs.all, {});
 
@@ -54,7 +40,7 @@ function plugin(CodeMirror) {
 
 	// Helper for the math lines function,
 	// removes all lines until the ```math symbol
-	function erase_to_start(lines: string[], lineno: number) {
+	function erase_to_start(lines: string[], lineno: number, allow_inline: boolean) {
 		for (let i = lineno; i >= 0; i--) {
 			const line = lines[i];
 			if (!line) continue;
@@ -62,21 +48,21 @@ function plugin(CodeMirror) {
 			if (line.trim() === '```math') {
 				break;
 			}
-			else if (!line.match(inline_math_regex)) {
+			else if (!(allow_inline && line.match(inline_math_regex))) {
 				lines[i] = '';
 			}
 		}
 	}
 
 	// Takes in an array of all lines, and strips out any non-math lines
-	function trim_lines(lines: string[]) {
+	function trim_lines(lines: string[], allow_inline: boolean) {
 		let might_be_in_block = false;
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 			if (!line) continue;
 
-			if (line.match(inline_math_regex)) {
+			if (allow_inline && line.match(inline_math_regex)) {
 				continue;
 			}
 			else if (might_be_in_block && line.trim() === '```') {
@@ -86,32 +72,33 @@ function plugin(CodeMirror) {
 			}
 			else if (line.trim() === '```math') {
 				might_be_in_block = true;
-				lines[i] = '';
+				lines[i] = '```math';
 			}
 			
 			if (!might_be_in_block)
 				lines[i] = '';
 		}
 		if (might_be_in_block) {
-			erase_to_start(lines, lines.length);
+			erase_to_start(lines, lines.length, allow_inline);
 		}
 
 		return lines;
 	}
 
 	function reprocess(cm: any) {
-		const lines = trim_lines(cm.getValue('\n').split('\n'));
+		const allow_inline = cm.state.mathMode.globalConfig.inlinesyntax;
+		const lines = trim_lines(cm.getValue('\n').split('\n'), allow_inline);
 
 		// scope is global to the note
 		let scope = Object.assign({}, cm.state.mathMode.scope);
 		let lineData = {};
 		let globalConfig = Object.assign({}, cm.state.mathMode.globalConfig);
-		let config = Object.assign({}, defaultConfig);
+		let config = Object.assign({}, globalConfig);
 		let block_total = '';
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 
-			if (!line) {
+			if (!line || line === '```math') {
 				block_total = '';
 			}
 			else if (line === '```') {
@@ -320,20 +307,9 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	function update_rates(cm: any) {
-		get_exchange_rates().then(rates => {;
-			math.createUnit(rates.base);
-			Object.keys(rates.rates)
-				.forEach((currency) => {
-					math.createUnit(currency, math.unit(1/rates.rates[currency], rates.base));
-				});
-			reprocess(cm);
-		});
-	}
-
 	// On each change we're going to scan for 
 	function on_change(cm: any, change: any) {
-		let lines = trim_lines(cm.getValue('\n').split('\n'));
+		let lines = trim_lines(cm.getValue('\n').split('\n'), true);
 		clean_up(cm, lines);
 		// Most changes are the user typing a single character
 		// If this doesn't happen inside a math block, we shouldn't re-process
@@ -360,10 +336,21 @@ function plugin(CodeMirror) {
 		}, 300);
 	}
 
+	function update_rates(cm: any) {
+		get_exchange_rates().then(rates => {;
+			math.createUnit(rates.base);
+			Object.keys(rates.rates)
+				.forEach((currency) => {
+					math.createUnit(currency, math.unit(1/rates.rates[currency], rates.base));
+				});
+			reprocess(cm);
+		});
+	}
+
 	// I ran into an odd bug dueing development where the function where wouldn't be called
 	// when the default value of the option was true (only happened on some notes)
 	// The fix for me was to set the option to true in codeMirrorOptions instead
-	CodeMirror.defineOption('enable-math-mode', false, function(cm, val, old) {
+	CodeMirror.defineOption('enable-math-mode', false, async function(cm, val, old) {
 		// Cleanup
 		if (old && old != CodeMirror.Init) {
 			clearInterval(cm.state.mathMode.rateInterval);
@@ -374,10 +361,12 @@ function plugin(CodeMirror) {
 		if (val) {
 			const interval = setInterval(() => { update_rates(cm); }, 1000*60*60*24);
 
+			const globalConfig = await context.postMessage({name: 'getConfig'});
+
 			cm.state.mathMode = {
 				scope: {},
 				rateInterval: interval,
-				globalConfig: Object.assign({}, defaultConfig),
+				globalConfig: globalConfig,
 				lineData: {},
 			};
 
@@ -390,9 +379,11 @@ function plugin(CodeMirror) {
 }
 
 module.exports = {
-	default: function(_context) { 
+	default: function(context) { 
 		return {
-			plugin: plugin,
+			plugin: function(CodeMirror) {
+				return plugin(CodeMirror, context);
+			},
 			codeMirrorResources: ['addon/mode/multiplex'],
 			codeMirrorOptions: { mode: 'joplin-literate-math', 'enable-math-mode': true },
 			assets: function() {
