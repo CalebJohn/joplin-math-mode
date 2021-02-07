@@ -4,7 +4,7 @@ An example of using the calculations while planning. A basic plugin using simple
 ![example of planning a road trip](./road_trip.png)
 
 ## Monthly Budget
-An example showing the usage of the `total` variable. Any continuous block of calculations will be added together into a `total`.
+An example showing the usage of the `total` variable. Any continuous block of calculations will be added together into a `total`. This example also demonstrates the `displaytotal` config option.
 ![example of a monthly budget](./monthly_budget.png)
 
 ## What I Owe Mom

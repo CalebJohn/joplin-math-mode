@@ -45,6 +45,7 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 	global: no | yes
 	simplify: no | yes
 	bignumber: no | yes
+	displaytotal: no | yes
 	hide: no | expression | result
 	verbose: yes | no
 	inline: yes | no
@@ -54,11 +55,13 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 	```
 
 Where
-`global` determines if the following settings (within the same block) will apply to all the following blocks.
+`global` determines if the following settings (within the same block) will apply to all the following blocks (and code lines).
 
 `simplify` will direct the math engine to simplify rather than solve expressions.
 
 `bignumber` will us the mathjs [`BigNumber`](https://mathjs.org/docs/datatypes/bignumbers.html) with 128 bit precision. `bignumber` and `simplify` are incompatible.
+
+`displaytotal` rather than showing the result of a line, showing the running total of the block.
 
 `hide` will hide either a math expression or result.
 
@@ -76,9 +79,6 @@ Where
 ### TODO
 - [ ] Add a markdown-It renderer plugin to get the output on both views
 - [x] Add syntax or a method for sum calculations
-- [ ] Add insert button on context menu for all math lines
-	- Done but awaiting plugin system updates
-- [ ] Support an "insert all commands in note" from the menu
 - [ ] Add configuration to settings menu
 
 ### Ideas
@@ -86,7 +86,9 @@ There is no plan to implement any of these ideas, but there might be eventually.
 - [ ] Support input in latex format (and maybe in $...$)
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
-- [ ] Add global settings to the settings menu
+- [ ] Add insert button on context menu for all math lines
+	- Done but awaiting plugin system updates
+- [ ] Support an "insert all commands in note" from the menu
 
 
 ---

@@ -1,13 +1,11 @@
+import { get_exchange_rates } from './exchangeRate'
 const mathjs = require('mathjs');
 
 interface PluginState {
 	scope: object;
+	globalConfig: object;
+	lineData: object;
 };
-
-interface Block {
-	start: number;
-	end: number;
-}
 
 type BlockType = '+' | '-';
 
@@ -28,17 +26,12 @@ function plugin(CodeMirror) {
   );
 	});
 
-	CodeMirror.commands['mathMode.insertMathResult'] = function(cm: any) {
-		const { line } = cm.getCursor();
-		insert_math_at(cm, line);
-	};
-
-
 	// Eventually we want to set this based on the Joplin settings
 	const defaultConfig = {
 		global: 'no',
 		simplify: 'no',
 		bignumber: 'no',
+		displaytotal: 'no',
 		hide: 'no',
 		verbose: 'yes',
 		inline: 'yes',
@@ -46,6 +39,8 @@ function plugin(CodeMirror) {
 		precision: '4',
 		align: 'left',
 	};
+
+	const math = mathjs.create(mathjs.all, {});
 
 	function truthy(s: string) {
 		s = s.toLowerCase();
@@ -57,121 +52,92 @@ function plugin(CodeMirror) {
 		return s.startsWith('f') || s.startsWith('n') || s === '0';
 	}
 
-	// if is in a block return {start, end}
-	// where start is the first math line of a block
-	// and end is the close tag of the block (last line + 1)
-	// otherwise returns false
-	function find_block(cm: any, lineno: number): Block {
-		if (!lineno && lineno !== 0) lineno = cm.lastLine();
+	// Helper for the math lines function,
+	// removes all lines until the ```math symbol
+	function erase_to_start(lines: string[], lineno: number) {
+		for (let i = lineno; i >= 0; i--) {
+			const line = lines[i];
+			if (!line) continue;
 
-		let start = -1;
-		// A line is in a block if it is wrapped in a ```math and ```
-		// We start at lineno - 1 to ensure that event the trailing
-		// ``` will be treated as part of a block
-		for (let i = lineno; i >= cm.firstLine(); i--) {
-			const line = cm.getLine(i);
-
-			// If we encounter an end of block marker
-			// then we know we wer not in a block
-			if (line === '```') {
-				return null;
-			}
-			else if (line === '```math') {
-				start = i + 1;
+			if (line.trim() === '```math') {
 				break;
 			}
-		}
-
-		if (start === -1) return null;
-
-		for (let i = start; i < cm.lineCount(); i++) {
-			const line = cm.getLine(i);
-
-			if (line.indexOf('```') === 0) {
-				if (line.trim() === '```') {
-					return { start: start, end: i - 1 };
-				}
-
-				return null;
+			else if (!line.match(inline_math_regex)) {
+				lines[i] = '';
 			}
 		}
-
-		return null;
 	}
 
-	function find_inline_block(cm: any, lineno: number): Block {
-		if (!lineno && lineno !== 0) lineno = cm.lastLine();
+	// Takes in an array of all lines, and strips out any non-math lines
+	function trim_lines(lines: string[]) {
+		let might_be_in_block = false;
 
-		let start = -1;
-
-		for (let i = lineno; i >= cm.firstLine(); i--) {
-			const line = cm.getLine(i);
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			if (!line) continue;
 
 			if (line.match(inline_math_regex)) {
-				start = i;
-			} else {
-				break;
+				continue;
+			}
+			else if (might_be_in_block && line.trim() === '```') {
+				might_be_in_block = false;
+				lines[i] = '```';
+				continue;
+			}
+			else if (line.trim() === '```math') {
+				might_be_in_block = true;
+				lines[i] = '';
+			}
+			
+			if (!might_be_in_block)
+				lines[i] = '';
+		}
+		if (might_be_in_block) {
+			erase_to_start(lines, lines.length);
+		}
+
+		return lines;
+	}
+
+	function reprocess(cm: any) {
+		const lines = trim_lines(cm.getValue('\n').split('\n'));
+
+		// scope is global to the note
+		let scope = Object.assign({}, cm.state.mathMode.scope);
+		let lineData = {};
+		let globalConfig = Object.assign({}, cm.state.mathMode.globalConfig);
+		let config = Object.assign({}, defaultConfig);
+		let block_total = '';
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			if (!line) {
+				block_total = '';
+			}
+			else if (line === '```') {
+				config = Object.assign({}, globalConfig);
+				block_total = '';
+			}
+			else if (line.includes(':')) {
+				lineData[i] = process_config(line, config);
+			}
+			else {
+				// Allow the user to redefine the total variable if they want
+				const localScope = Object.assign({total: block_total}, scope);
+				lineData[i] = process_line(line, localScope, config, block_total);
+				// Update the scope
+				scope = Object.assign(scope, localScope);
+				block_total = lineData[i].total;
+			}
+
+			if (truthy(config.global)) {
+				globalConfig = Object.assign(globalConfig, config, {global: 'false'});
 			}
 		}
 
-		if (start === -1) return null;
+		cm.state.mathMode.lineData = lineData;
 
-		let end = -1;
-
-		for (let i = start; i < cm.lineCount(); i++) {
-			const line = cm.getLine(i);
-
-			if (line.match(inline_math_regex)) {
-				end = i;
-			} else {
-				break;
-			}
-		}
-
-		if (end === -1) return null;
-
-		return { start, end };
-	}
-
-	function find_math(cm: any, lineno: number): Block {
-		const block = find_block(cm, lineno);
-		const inline = find_inline_block(cm, lineno);
-
-		// It's possible that a user may input an inline math style line into a block
-		// and we don't want that to prevent this system from finding the block
-		// so we check for the block first and check for inline if no block is found
-		return block ? block : inline;
-	}
-
-	// We sometimes we will want to find all the math blocks in order
-	// to re-process an entire note
-	function reprocess_all(cm: any) {
-		cm.state.mathMode.scope = {};
-		cm.state.mathMode.lineData = {};
-
-		let noteConfig = Object.assign({}, defaultConfig);
-
-		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
-			const to_process = find_math(cm, i);
-
-			if (!to_process) continue;
-
-			process_block(cm, to_process, noteConfig)
-
-			// Jump to end of the block
-			// This does nothing for inline math, and prevents duplicated
-			// running of larger blocks
-			i = to_process.end;
-		}
-
-		refresh_widgets(cm, { start: cm.firstLine(), end: cm.lineCount() - 1 });
-	}
-
-	function insert_math_at(cm: any, lineno: number) {
-		const line = cm.getLine(lineno);
-		const result = cm.state.mathMode.lineData[lineno];
-
-		cm.replaceRange(line + equation_result_separator + result, { line: lineno, ch: 0 }, { line: lineno, ch:line.length });
+		refresh_widgets(cm);
 	}
 
 	function get_line_equation(line: string): string {
@@ -203,107 +169,81 @@ function plugin(CodeMirror) {
 		return filtered.length > 0;
 	}
 
-	function process_block(cm: any, block: Block, noteConfig: any) {
-		// scope is global to the note
-		let scope = cm.state.mathMode.scope;
-		let config = Object.assign({}, noteConfig);
-		const math = mathjs.create(mathjs.all, {});
-		let block_total = '';
+	function process_line(line: string, scope: any, config: any, block_total: string): any {
+		let result = '';
+		let contains_total = false;
 
-		for (let i = block.start; i <= block.end; i++) {
-			const full_line = cm.getLine(i).split(equation_result_separator);
-			const line = full_line[0];
+		try {
+			const p = math.parse(get_line_equation(line));
 
-			// This is an empty line, ignore it and reset the total counter
-			if (!line) {
-				block_total = '';
-				continue;
-			}
+			// Evaluate the Expression
+			if (falsey(config.simplify))
+				result = p.evaluate(scope);
+			else
+				result = math.simplify(p)
 
-			// This is configuration, not math
-			// current system is fairly simplistic (maybe even ugly)
-			// but it's small enough now that I can justify it
-			// remember to re-evaulate this if/when things get more complex
-			if (line.includes(':')) {
-				const [ key, value ] = line.split(':', 2);
-				config[key.trim()] = value.trim();
-				cm.state.mathMode.lineData[i] = { isConfig: true };
-
-				if (truthy(config.bignumber)) {
-					math.config({
-							number: 'BigNumber',
-							precision: 128
-					});
+			contains_total = math_contains_symbol(p, 'total');
+			if (result && !contains_total) {
+				const sum_char = get_sum_type(line);
+				// An error can occur when the types don't match up
+				// To revocer, restart the sum counter
+				try {
+					block_total = math.parse(`${block_total} ${block_total!=='' ? sum_char: ''} ${result}`).evaluate(scope);
 				}
-				else {
-					math.config({
-							number: 'number'
-					});
-				}
-
-				continue;
-			}
-
-			// Process one line
-			let result = '';
-			try {
-				const p = math.parse(get_line_equation(line));
-				// Allow the user to redefine the total variable if they want
-				const localScope = Object.assign({total: block_total}, scope);
-
-				// Evaluate the Expression
-				if (falsey(config.simplify))
-					result = p.evaluate(localScope);
-				else
-					result = math.simplify(p)
-
-				if (result && !(math_contains_symbol(p, 'total'))) {
-					const sum_char = get_sum_type(line);
-					// An error can occur when the types don't match up
-					// To revocer, restart the sum counter
-					try {
-						block_total = math.parse(`${block_total} ${block_total!=='' ? sum_char: ''} ${result}`).evaluate(localScope);
-					}
-					catch(err) {
-						block_total = result;
-					}
-				}
-
-				// If the sum variable wasn't modified, clear it
-				if (!math_contains_assignment(p, 'total'))
-					delete localScope['total'];
-				// Update the scope
-				scope = Object.assign(scope, localScope);
-
-				// Format the output
-				result = math.format(result, {
-					precision: Number(config.precision),
-					notation: config.notation,
-				});
-
-				// Attach a name if necessary
-				if (p.name && truthy(config.verbose))
-					result = p.name + ': ' + result;
-			} catch(e) {
-				result = e.message;
-
-				if (e.message.indexOf('Cannot create unit') === 0) {
-					result = '';
+				catch(err) {
+					block_total = result;
 				}
 			}
 
-			cm.state.mathMode.lineData[i] = {
-				result: result,
-				inputHidden: config.hide === 'expression',
-				resultHidden: config.hide === 'result',
-				inline: truthy(config.inline),
-				alignRight: config.align === 'right',
+			// If the sum variable wasn't modified, clear it
+			if (!math_contains_assignment(p, 'total'))
+				delete scope['total'];
+
+			// Format the output
+			result = math.format(result, {
+				precision: Number(config.precision),
+				notation: config.notation,
+			});
+
+			// Attach a name if necessary
+			if (p.name && truthy(config.verbose))
+				result = p.name + ': ' + result;
+		} catch(e) {
+			result = e.message;
+
+			if (e.message.indexOf('Cannot create unit') === 0) {
+				result = '';
 			}
 		}
 
-		if (truthy(config.global)) {
-			noteConfig = Object.assign(noteConfig, config, {global: 'block'});
+		return {
+			result: result,
+			total: block_total,
+			displaytotal: truthy(config.displaytotal) && !contains_total,
+			inputHidden: config.hide === 'expression',
+			resultHidden: config.hide === 'result',
+			inline: truthy(config.inline),
+			alignRight: config.align === 'right',
+		};
+	}
+
+	function process_config(line: string, config: any) {
+		const [ key, value ] = line.split(':', 2);
+		config[key.trim()] = value.trim();
+
+		if (truthy(config.bignumber)) {
+			math.config({
+					number: 'BigNumber',
+					precision: 128
+			});
 		}
+		else {
+			math.config({
+					number: 'number'
+			});
+		}
+
+		return { isConfig: true };
 	}
 
 	function clear_math_widgets(cm: any, lineInfo: any) {
@@ -321,17 +261,13 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	function refresh_widgets(cm: any, block: Block) {
-		for (let i = block.start; i <= block.end; i++) {
+	function refresh_widgets(cm: any) {
+		for (let i = cm.firstLine(); i <= cm.lastLine(); i++) {
 			const line = cm.lineInfo(i);
 
 			clear_math_widgets(cm, line);
 
-			const full_line = line.text.split(equation_result_separator);
 			const lineData = cm.state.mathMode.lineData[i];
-
-			// Don't bother showing the result if it has already been inserted into the text
-			if (full_line[1]) continue;
 
 			if (!lineData) continue;
 
@@ -350,8 +286,14 @@ function plugin(CodeMirror) {
 
 			const marker = lineData.inputHidden ? equation_result_collapsed : equation_result_separator;
 
+			let result = lineData.result;
+
+			if (lineData.displaytotal && !result.includes('total')) {
+				result = lineData.total;
+			}
+
 			const res = document.createElement('div');
-			const node = document.createTextNode(marker + lineData.result);
+			const node = document.createTextNode(marker + result);
 			res.appendChild(node);
 
 			if (lineData.alignRight)
@@ -368,11 +310,9 @@ function plugin(CodeMirror) {
 		}
 	}
 
-	// If there are lines that don't belong to a block and contain math-result-line
-	// widgets, then we should clear them
-	function clean_up(cm: any) {
-		for (let i = cm.firstLine(); i < cm.lineCount(); i++) {
-			if (!find_math(cm, i)) {
+	function clean_up(cm: any, lines: string[]) {
+		for (let i = 0; i < lines.length; i++) {
+			if (!lines[i]) {
 				const line = cm.lineInfo(i);
 
 				clear_math_widgets(cm, line);
@@ -380,23 +320,34 @@ function plugin(CodeMirror) {
 		}
 	}
 
+	function update_rates(cm: any) {
+		get_exchange_rates().then(rates => {;
+			math.createUnit(rates.base);
+			Object.keys(rates.rates)
+				.forEach((currency) => {
+					math.createUnit(currency, math.unit(1/rates.rates[currency], rates.base));
+				});
+			reprocess(cm);
+		});
+	}
+
 	// On each change we're going to scan for 
 	function on_change(cm: any, change: any) {
-		clean_up(cm);
-
+		let lines = trim_lines(cm.getValue('\n').split('\n'));
+		clean_up(cm, lines);
 		// Most changes are the user typing a single character
 		// If this doesn't happen inside a math block, we shouldn't re-process
 		// +input means the user input the text (as opposed to joplin/plugin)
 		// +delete means the user deleted some text
 		// setValue means something programically altered the text
 		if (change.from.line === change.to.line && change.origin !== "setValue") {
-			const block = find_math(cm, change.from.line);
-			const prev = find_math(cm, Math.max(change.from.line - 1, cm.firstLine()));
+			const from = change.from.line;
 
-			// If this minor change didn't affect a math section then we quit early
-			if (!block && !prev) return;
+			if (!lines[from] &&
+				(from === cm.firstLine() || !lines[from - 1]) &&
+				(from === cm.lastLine() || !lines[from + 1]))
+				return;
 		}
-
 		
 		if (cm.state.mathMode.timer)
 			clearTimeout(cm.state.mathMode.timer);
@@ -404,18 +355,9 @@ function plugin(CodeMirror) {
 		cm.state.mathMode.timer = setTimeout(() => {
 		// Because the entire document shares one scope, 
 		// we will re-process the entire document for each change
-			reprocess_all(cm);
+			reprocess(cm);
 			cm.state.mathMode.timer = null;
 		}, 300);
-
-		// Eventually we might want an option for per-block processing/scope
-		//
-		// We might also want to use the change.from.line and change.to.line
-		// to make this more efficient, but I'm avoiding the complexity for now
-		// (I ran into an issue when doing a full note switch where the new note
-		// had a math block lower in the new note than the entire length of the 
-		// original note, so the original logic which only looked for blocks within
-		// the from and to of the change didn't work)
 	}
 
 	// I ran into an odd bug dueing development where the function where wouldn't be called
@@ -424,17 +366,23 @@ function plugin(CodeMirror) {
 	CodeMirror.defineOption('enable-math-mode', false, function(cm, val, old) {
 		// Cleanup
 		if (old && old != CodeMirror.Init) {
+			clearInterval(cm.state.mathMode.rateInterval);
 			cm.state.mathMode = null;
 			cm.off("change", on_change);
 		}
 		// setup
 		if (val) {
+			const interval = setInterval(() => { update_rates(cm); }, 1000*60*60*24);
+
 			cm.state.mathMode = {
 				scope: {},
+				rateInterval: interval,
+				globalConfig: Object.assign({}, defaultConfig),
 				lineData: {},
 			};
 
-			reprocess_all(cm);
+			update_rates(cm);
+			reprocess(cm);
 			// We need to process all blocks on the next update
 			cm.on('change', on_change);
 		}
