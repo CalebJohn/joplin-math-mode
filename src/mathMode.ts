@@ -157,11 +157,12 @@ function plugin(CodeMirror, context) {
 	}
 
 	function process_line(line: string, scope: any, config: any, block_total: string): any {
+		let p = null;
 		let result = '';
 		let contains_total = false;
 
 		try {
-			const p = math.parse(get_line_equation(line));
+			p = math.parse(get_line_equation(line));
 
 			// Evaluate the Expression
 			if (falsey(config.simplify))
@@ -173,7 +174,7 @@ function plugin(CodeMirror, context) {
 			if (result && !contains_total) {
 				const sum_char = get_sum_type(line);
 				// An error can occur when the types don't match up
-				// To revocer, restart the sum counter
+				// To recover, restart the sum counter
 				try {
 					block_total = math.parse(`${block_total} ${block_total!=='' ? sum_char: ''} ${result}`).evaluate(scope);
 				}
@@ -181,11 +182,6 @@ function plugin(CodeMirror, context) {
 					block_total = result;
 				}
 			}
-
-			// If the sum variable wasn't modified, clear it
-			if (!math_contains_assignment(p, 'total'))
-				delete scope['total'];
-
 			// Format the output
 			result = math.format(result, {
 				precision: Number(config.precision),
@@ -203,12 +199,18 @@ function plugin(CodeMirror, context) {
 			}
 		}
 
+		// If the total variable wasn't modified, clear it
+		// This needs to be outside the "try" statement to guarantee that it runs
+		if (!math_contains_assignment(p, 'total'))
+			delete scope['total'];
+
+
 		return {
 			result: result,
 			total: block_total,
 			displaytotal: truthy(config.displaytotal) && !contains_total,
 			inputHidden: config.hide === 'expression',
-			resultHidden: config.hide === 'result',
+			resultHidden: config.hide === 'result' || result === '',
 			inline: truthy(config.inline),
 			alignRight: config.align === 'right',
 		};
@@ -339,9 +341,11 @@ function plugin(CodeMirror, context) {
 	function update_rates(cm: any) {
 		get_exchange_rates().then(rates => {;
 			math.createUnit(rates.base);
+			math.createUnit(rates.base.toLowerCase(), math.unit(1, rates.base));
 			Object.keys(rates.rates)
 				.forEach((currency) => {
 					math.createUnit(currency, math.unit(1/rates.rates[currency], rates.base));
+					math.createUnit(currency.toLowerCase(), math.unit(1/rates.rates[currency], rates.base));
 				});
 			reprocess(cm);
 		});

@@ -3,7 +3,7 @@ A plugin for inputting and evaluating math in markdown code blocks. It's built o
 
 So what can it do? It's better to demonstrate with an example.
 
-![Screenshot of using math mode to plan a road trip](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples/road_trip.png)
+![Screenshot of using math mode to plan a road trip](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples/euro_trip.png)
 
 
 Try some of these!
@@ -13,6 +13,8 @@ Try some of these!
 	= 5cm + 0.2 m in inch
 	
 	= i^2
+
+	= 10.15 USD to CAD
 	
 	```math
 	M = [1, 3; 4, 6]
@@ -39,7 +41,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - Click Install and restart Joplin
 
 # Configuration
-Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The supported settings are (defaults listed first):
+Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The defaults can be changed under Tools -> Options -> Math Mode (Preferences on MacOS). The supported settings are (defaults listed first):
 
 	```math
 	global: no | yes
@@ -49,8 +51,8 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 	hide: no | expression | result
 	verbose: yes | no
 	inline: yes | no
-	notation: auto | exponential | engineering
-	precision: Any number > 0
+	notation: auto | exponential | engineering | fixed 
+	precision: Any number between 0 and 16
 	align: left | right
 	```
 
@@ -71,7 +73,7 @@ Where
 
 `notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results.
 
-`precision` the number of decimal places to show, 0 for all.
+`precision` the number of decimal places to show, 0 to show all. See [mathjs docs](https://mathjs.org/docs/reference/functions/format.html).
 
 `align` place the result on the left or right of the editor window.
 

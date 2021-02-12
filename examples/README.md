@@ -11,6 +11,10 @@ An example showing the usage of the `total` variable. Any continuous block of ca
 Another `total` example that demonstrates the explicit addition and summation syntax for the `total` variable.
 ![example of splitting bills](./what_i_owe_mom.png)
 
+## Euro Trip
+Example that demonstrates the use of currency conversion. Also uses the `total` variable to sum up the daily cost of a trip.
+![example of foreign trip planning]('./euro_trip.png)
+
 
 # Advanced
 ## Burger

@@ -14,7 +14,7 @@ const defaultConfig = {
 	verbose: true,
 	inline: true,
 	notation: 'auto',
-	precision: 4,
+	precision: 8,
 	align: 'left',
 	inlinesyntax: true,
 };
