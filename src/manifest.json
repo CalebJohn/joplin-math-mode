@@ -6,7 +6,7 @@
 	"name": "Math Mode",
 	"description": "Turn your notes into a powerful calculator with inline math.",
 	"author": "Caleb John",
-	"homepage_url": "https://github.com/CalebJohn/joplin-math-mode/blob/main/README.md",
+	"homepage_url": "https://github.com/CalebJohn/joplin-math-mode#readme",
 	"repository_url": "https://github.com/CalebJohn/joplin-math-mode",
 	"keywords": ["calculator", "math", "mathjs"]
 }

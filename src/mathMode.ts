@@ -141,6 +141,8 @@ function plugin(CodeMirror, context) {
 	}
 
 	function math_contains_assignment(parsed: any, name: string) {
+		if (!parsed) return false;
+
 		const filtered = parsed.filter(function (n) {
 			return n.isAssignmentNode && n.name === name
 		});
@@ -149,6 +151,8 @@ function plugin(CodeMirror, context) {
 	}
 
 	function math_contains_symbol(parsed: any, name: string) {
+		if (!parsed) return false;
+
 		const filtered = parsed.filter(function (n) {
 			return n.isSymbolNode && n.name === name
 		});
