@@ -36,6 +36,7 @@ joplin.plugins.register({
 			type: SettingItemType.Bool,
 			section: 'settings.calebjohn.mathmode',
 			public: true,
+			advanced: true,
 			label: 'Show simplified result rather than exact value'
     });
 		await joplin.settings.registerSetting('bignumber', {
@@ -43,7 +44,9 @@ joplin.plugins.register({
 			type: SettingItemType.Bool,
 			section: 'settings.calebjohn.mathmode',
 			public: true,
-			label: 'Use 128 bit BigNumbers for calculations (warning some mathjs features won\'t work)'
+			advanced: true,
+			label: 'Use 128 bit BigNumbers for calculations ',
+			description: '**warning some mathjs features won\'t work**',
     });
 		await joplin.settings.registerSetting('verbose', {
 			value: defaultConfig.verbose,
