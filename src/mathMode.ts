@@ -180,10 +180,18 @@ function plugin(CodeMirror, context) {
 				// An error can occur when the types don't match up
 				// To recover, restart the sum counter
 				try {
-					block_total = math.parse(`${block_total} ${block_total!=='' ? sum_char: ''} ${result}`).evaluate(scope);
+					block_total = math.parse(`${block_total} ${sum_char} ${result}`).evaluate(scope);
 				}
 				catch(err) {
-					block_total = result;
+					// If the error parsing still fails, we will just return the result (no sign)
+					// This will fail in cases were the result type is a symbolic type
+					// There is probably a better method to handle this case
+					try {
+						block_total = math.parse(`${sum_char} ${result}`).evaluate(scope);
+					}
+					catch(errr) {
+						block_total = result;
+					}
 				}
 			}
 			// Format the output
