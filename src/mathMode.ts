@@ -9,7 +9,7 @@ interface PluginState {
 
 type BlockType = '+' | '-';
 
-const inline_math_regex = /^(\+|\-)?=(?=[^=])/;
+const inline_math_regex = /^(\+|\-)?=(?=[^=>])/;
 const equation_result_separator = " => ";
 const equation_result_collapsed = " |> ";
 
@@ -74,7 +74,7 @@ function plugin(CodeMirror, context) {
 				might_be_in_block = true;
 				lines[i] = '```math';
 			}
-			
+
 			if (!might_be_in_block)
 				lines[i] = '';
 		}
@@ -278,7 +278,7 @@ function plugin(CodeMirror, context) {
 			}
 
 			if (lineData.resultHidden) continue;
-			
+
 			if (lineData.inputHidden)
 				cm.addLineClass(i, 'text', 'math-hidden');
 			else if (lineData.inline)
@@ -321,7 +321,7 @@ function plugin(CodeMirror, context) {
 		}
 	}
 
-	// On each change we're going to scan for 
+	// On each change we're going to scan for
 	function on_change(cm: any, change: any) {
 		let lines = trim_lines(cm.getValue('\n').split('\n'), true);
 		clean_up(cm, lines);
@@ -338,12 +338,12 @@ function plugin(CodeMirror, context) {
 				(from === cm.lastLine() || !lines[from + 1]))
 				return;
 		}
-		
+
 		if (cm.state.mathMode.timer)
 			clearTimeout(cm.state.mathMode.timer);
 
 		cm.state.mathMode.timer = setTimeout(() => {
-		// Because the entire document shares one scope, 
+		// Because the entire document shares one scope,
 		// we will re-process the entire document for each change
 			reprocess(cm);
 			cm.state.mathMode.timer = null;
@@ -395,7 +395,7 @@ function plugin(CodeMirror, context) {
 }
 
 module.exports = {
-	default: function(context) { 
+	default: function(context) {
 		return {
 			plugin: function(CodeMirror) {
 				return plugin(CodeMirror, context);
