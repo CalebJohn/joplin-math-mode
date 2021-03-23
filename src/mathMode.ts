@@ -9,7 +9,7 @@ interface PluginState {
 
 type BlockType = '+' | '-';
 
-const inline_math_regex = /^(\+|\-)?=(?=[^=>])/;
+const inline_math_regex = /^(\+|\-)?=(?= *[0-9a-zA-Z\[\(\-\+])/;
 const equation_result_separator = " => ";
 const equation_result_collapsed = " |> ";
 
