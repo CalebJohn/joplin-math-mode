@@ -6,6 +6,8 @@ So what can it do? It's better to demonstrate with an example.
 ![Screenshot of using math mode to plan a road trip](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples/euro_trip.png)
 
 
+![](examples/mathView_2021-04-26-17-31-56.png)
+
 Try some of these!
 
 	= derivative('x^2 + x', 'x')
@@ -30,9 +32,31 @@ Try some of these!
 	permutations(6, 3)
 	```
 
+	= sqrt(75 / 3) + det([[-1, 2], [3, 1]]) - sin(pi / 4)^2
+	= 5cm + 0.2 m in inch
+	= i^2
+	= e
+	= pi
+	= pi ^ pi ^ 2 
+	= log(2)
+
+	```math
+	# 注释内容：
+	sqrt(75/3)+det([[-1,2],[3,1]])-sin(pi/4)^2
+	derivative('x^2 + x + tan(x)', 'x')
+	x=20212
+	x+x
+	x=90;x
+	y=23
+	[x, y]
+	1/(x+2/(y+sqrt(99/(123))))
+	```
+
 View all examples in [the examples folder](https://github.com/CalebJohn/joplin-math-mode/blob/main/examples). If you have an example of your own, please consider adding it to the examples directory, or sending it my way to have added. Thanks!
 
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
+
+* [pretty printing with mathjax](https://mathjs.org/examples/browser/pretty_printing_with_mathjax.html) 
 
 
 # Installation

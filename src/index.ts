@@ -127,5 +127,10 @@ joplin.plugins.register({
 			contentScriptId,
 			'./mathMode.js'
 		);
+		await joplin.contentScripts.register(
+			ContentScriptType.MarkdownItPlugin,
+			contentScriptId,
+			'./mathView.js'
+		);
 	},
 });
