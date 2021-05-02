@@ -19,6 +19,7 @@ const defaultConfig = {
 	precision: 8,
 	align: 'left',
 	inlinesyntax: true,
+	copyButton: true,
 };
 
 
@@ -41,6 +42,14 @@ joplin.plugins.register({
 			advanced: true,
 			label: 'Use 128 bit BigNumbers for calculations ',
 			description: '**warning some mathjs features won\'t work**',
+    });
+		await joplin.settings.registerSetting('copyButton', {
+			value: defaultConfig.inlinesyntax,
+			type: SettingItemType.Bool,
+			section: 'settings.calebjohn.mathmode',
+			public: true,
+			advanced: true,
+			label: 'Show copy to clipboard button on hover.'
     });
 		await joplin.settings.registerSetting('verbose', {
 			value: defaultConfig.verbose,
@@ -116,7 +125,7 @@ joplin.plugins.register({
 			if (message.name === 'getConfig') {
 				return {
 					global: defaultConfig.global ? 'yes' : 'no',
-					simplify: await joplin.settings.value('simplify') ? 'yes': 'no',
+					simplify: defaultConfig.simplify ? 'yes' : 'no',
 					bignumber: await joplin.settings.value('bignumber') ? 'yes': 'no',
 					displaytotal: defaultConfig.displaytotal ? 'yes' : 'no',
 					hide: defaultConfig.hide ? 'yes' : 'no',
@@ -128,6 +137,7 @@ joplin.plugins.register({
 					precision: await joplin.settings.value('precision'),
 					align: await joplin.settings.value('align'),
 					inlinesyntax: await joplin.settings.value('inlinesyntax'),
+					copyButton: await joplin.settings.value('copyButton'),
 				};
 			}
 

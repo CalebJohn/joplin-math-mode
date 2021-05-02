@@ -96,3 +96,5 @@ There is no plan to implement any of these ideas, but there might be eventually.
 Inspired by [literate-calc-mode](https://github.com/sulami/literate-calc-mode.el) for emacs by [sulami](https://github.com/sulami)
 
 Thanks to the European Central Bank for [providing daily exchange rates](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html)
+
+This project uses icons (without modification) which are provided free under the [CC BY 4.0 License](https://fontawesome.com/license/free) by the Font Awesome project.
