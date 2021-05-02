@@ -14,6 +14,8 @@ const defaultConfig = {
 	verbose: true,
 	inline: true,
 	notation: 'auto',
+	lowerExp: -3,
+	upperExp: 9,
 	precision: 8,
 	align: 'left',
 	inlinesyntax: true,
@@ -66,10 +68,30 @@ joplin.plugins.register({
 			value: defaultConfig.notation,
 			type: SettingItemType.String,
 			isEnum: true,
-			options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto'},
+			options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed'},
+			// mathjs rejects bin, oct and hex for some reason
+			// options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed', 'bin': 'Binary', 'oct': 'Octal', 'hex': 'Hex'},
 			section: 'settings.calebjohn.mathmode',
 			public: true,
 			label: 'Which notation should be used for results?'
+    });
+		await joplin.settings.registerSetting('lowerExp', {
+			value: defaultConfig.lowerExp,
+			type: SettingItemType.Int,
+			section: 'settings.calebjohn.mathmode',
+			step: 1,
+			public: true,
+			advanced: true,
+			label: 'Lower boundary to format a number as an exponent (auto notation only)'
+    });
+		await joplin.settings.registerSetting('upperExp', {
+			value: defaultConfig.upperExp,
+			type: SettingItemType.Int,
+			section: 'settings.calebjohn.mathmode',
+			step: 1,
+			public: true,
+			advanced: true,
+			label: 'Upper boundary to format a number as an exponent (auto notation only)'
     });
 		await joplin.settings.registerSetting('precision', {
 			value: defaultConfig.precision,
@@ -109,6 +131,8 @@ joplin.plugins.register({
 					verbose: await joplin.settings.value('verbose') ? 'yes': 'no',
 					inline: await joplin.settings.value('inline') ? 'yes': 'no',
 					notation: await joplin.settings.value('notation'),
+					lowerExp: await joplin.settings.value('lowerExp'),
+					upperExp: await joplin.settings.value('upperExp'),
 					precision: await joplin.settings.value('precision'),
 					align: await joplin.settings.value('align'),
 					inlinesyntax: await joplin.settings.value('inlinesyntax'),

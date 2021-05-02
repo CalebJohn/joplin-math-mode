@@ -197,6 +197,8 @@ function plugin(CodeMirror, context) {
 			// Format the output
 			result = math.format(result, {
 				precision: Number(config.precision),
+				lowerExp: Number(config.lowerExp),
+				upperExp: Number(config.upperExp),
 				notation: config.notation,
 			});
 
