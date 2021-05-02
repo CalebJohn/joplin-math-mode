@@ -59,7 +59,7 @@ Math Mode supports a small number of settings that can be adjusted by placing a 
 Where
 `global` determines if the following settings (within the same block) will apply to all the following blocks (and code lines).
 
-`simplify` will direct the math engine to simplify rather than solve expressions.
+`simplify` will direct the math engine to simplify rather than solve expressions. This does not work with most expressions so use with caution.
 
 `bignumber` will us the mathjs [`BigNumber`](https://mathjs.org/docs/datatypes/bignumbers.html) with 128 bit precision. `bignumber` and `simplify` are incompatible.
 

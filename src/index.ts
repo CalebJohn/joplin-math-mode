@@ -33,14 +33,6 @@ joplin.plugins.register({
 			iconName: 'fas fa-calculator'
 		});
 
-		await joplin.settings.registerSetting('simplify', {
-			value: defaultConfig.simplify,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			advanced: true,
-			label: 'Show simplified result rather than exact value'
-    });
 		await joplin.settings.registerSetting('bignumber', {
 			value: defaultConfig.bignumber,
 			type: SettingItemType.Bool,
@@ -97,8 +89,8 @@ joplin.plugins.register({
 			value: defaultConfig.precision,
 			type: SettingItemType.Int,
 			section: 'settings.calebjohn.mathmode',
-			minimum: 1,
-			maximum: 32,
+			minimum: 0,
+			maximum: 16,
 			step: 1,
 			public: true,
 			label: 'How many digits of display precision should math results have?'
