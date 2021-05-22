@@ -20,6 +20,7 @@ const defaultConfig = {
 	align: 'left',
 	inlinesyntax: true,
 	copyButton: true,
+	currency: true,
 };
 
 
@@ -120,6 +121,13 @@ joplin.plugins.register({
 			public: true,
 			label: 'Treat lines that start with `=` as math lines.'
     });
+		await joplin.settings.registerSetting('currency', {
+			value: defaultConfig.currency,
+			type: SettingItemType.Bool,
+			section: 'settings.calebjohn.mathmode',
+			public: true,
+			label: 'Enable currency conversions (e.g. 100 CAD in EUR).'
+		});
 
 		await joplin.contentScripts.onMessage(contentScriptId, async (message:any) => {
 			if (message.name === 'getConfig') {
@@ -138,6 +146,7 @@ joplin.plugins.register({
 					align: await joplin.settings.value('align'),
 					inlinesyntax: await joplin.settings.value('inlinesyntax'),
 					copyButton: await joplin.settings.value('copyButton'),
+					currency: await joplin.settings.value('currency'),
 				};
 			}
 

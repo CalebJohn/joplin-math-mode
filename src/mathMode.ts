@@ -402,9 +402,12 @@ function plugin(CodeMirror, context) {
 		}
 		// setup
 		if (val) {
-			const interval = setInterval(() => { update_rates(cm); }, 1000*60*60*24);
-
 			const globalConfig = await context.postMessage({name: 'getConfig'});
+
+			let interval = null;
+			if (globalConfig.currency) {
+				interval = setInterval(() => { update_rates(cm); }, 1000*60*60*24);
+			}
 
 			cm.state.mathMode = {
 				scope: {},
@@ -413,7 +416,9 @@ function plugin(CodeMirror, context) {
 				lineData: {},
 			};
 
-			update_rates(cm);
+			if (globalConfig.currency) {
+				update_rates(cm);
+			}
 			reprocess(cm);
 			// We need to process all blocks on the next update
 			cm.on('change', on_change);
