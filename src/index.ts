@@ -35,98 +35,100 @@ joplin.plugins.register({
 			iconName: 'fas fa-calculator'
 		});
 
-		await joplin.settings.registerSetting('bignumber', {
-			value: defaultConfig.bignumber,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			advanced: true,
-			label: 'Use 128 bit BigNumbers for calculations ',
-			description: '**warning some mathjs features won\'t work**',
-    });
-		await joplin.settings.registerSetting('copyButton', {
-			value: defaultConfig.inlinesyntax,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			advanced: true,
-			label: 'Show copy to clipboard button on hover.'
-    });
-		await joplin.settings.registerSetting('verbose', {
-			value: defaultConfig.verbose,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'When assigning a variable, show the name next to the result'
-    });
-		await joplin.settings.registerSetting('inline', {
-			value: defaultConfig.inline,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'Show result next to input (inline)'
-    });
-		await joplin.settings.registerSetting('notation', {
-			value: defaultConfig.notation,
-			type: SettingItemType.String,
-			isEnum: true,
-			options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed'},
-			// mathjs rejects bin, oct and hex for some reason
-			// options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed', 'bin': 'Binary', 'oct': 'Octal', 'hex': 'Hex'},
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'Which notation should be used for results?'
-    });
-		await joplin.settings.registerSetting('lowerExp', {
-			value: defaultConfig.lowerExp,
-			type: SettingItemType.Int,
-			section: 'settings.calebjohn.mathmode',
-			step: 1,
-			public: true,
-			advanced: true,
-			label: 'Lower boundary to format a number as an exponent (auto notation only)'
-    });
-		await joplin.settings.registerSetting('upperExp', {
-			value: defaultConfig.upperExp,
-			type: SettingItemType.Int,
-			section: 'settings.calebjohn.mathmode',
-			step: 1,
-			public: true,
-			advanced: true,
-			label: 'Upper boundary to format a number as an exponent (auto notation only)'
-    });
-		await joplin.settings.registerSetting('precision', {
-			value: defaultConfig.precision,
-			type: SettingItemType.Int,
-			section: 'settings.calebjohn.mathmode',
-			minimum: 0,
-			maximum: 16,
-			step: 1,
-			public: true,
-			label: 'How many digits of display precision should math results have?'
-    });
-		await joplin.settings.registerSetting('align', {
-			value: defaultConfig.align,
-			type: SettingItemType.String,
-			isEnum: true,
-			options: { 'left': 'Left', 'right': 'Right' },
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'Which side should math be aligned to?'
-    });
-		await joplin.settings.registerSetting('inlinesyntax', {
-			value: defaultConfig.inlinesyntax,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'Treat lines that start with `=` as math lines.'
-    });
-		await joplin.settings.registerSetting('currency', {
-			value: defaultConfig.currency,
-			type: SettingItemType.Bool,
-			section: 'settings.calebjohn.mathmode',
-			public: true,
-			label: 'Enable currency conversions (e.g. 100 CAD in EUR).'
+		await joplin.settings.registerSettings({
+			'bignumber': {
+				value: defaultConfig.bignumber,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				advanced: true,
+				label: 'Use 128 bit BigNumbers for calculations ',
+				description: '**warning some mathjs features won\'t work**',
+			},
+			'copyButton': {
+				value: defaultConfig.inlinesyntax,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				advanced: true,
+				label: 'Show copy to clipboard button on hover.'
+			},
+			'verbose': {
+				value: defaultConfig.verbose,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'When assigning a variable, show the name next to the result'
+			},
+			'inline': {
+				value: defaultConfig.inline,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'Show result next to input (inline)'
+			},
+			'notation': {
+				value: defaultConfig.notation,
+				type: SettingItemType.String,
+				isEnum: true,
+				options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed'},
+				// mathjs rejects bin, oct and hex for some reason
+				// options: {'engineering': 'Engineering', 'exponential': 'Exponential', 'auto': 'Auto', 'fixed': 'Fixed', 'bin': 'Binary', 'oct': 'Octal', 'hex': 'Hex'},
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'Which notation should be used for results?'
+			},
+			'lowerExp': {
+				value: defaultConfig.lowerExp,
+				type: SettingItemType.Int,
+				section: 'settings.calebjohn.mathmode',
+				step: 1,
+				public: true,
+				advanced: true,
+				label: 'Lower boundary to format a number as an exponent (auto notation only)'
+			},
+			'upperExp': {
+				value: defaultConfig.upperExp,
+				type: SettingItemType.Int,
+				section: 'settings.calebjohn.mathmode',
+				step: 1,
+				public: true,
+				advanced: true,
+				label: 'Upper boundary to format a number as an exponent (auto notation only)'
+			},
+			'precision': {
+				value: defaultConfig.precision,
+				type: SettingItemType.Int,
+				section: 'settings.calebjohn.mathmode',
+				minimum: 0,
+				maximum: 16,
+				step: 1,
+				public: true,
+				label: 'How many digits of display precision should math results have?'
+			},
+			'align': {
+				value: defaultConfig.align,
+				type: SettingItemType.String,
+				isEnum: true,
+				options: { 'left': 'Left', 'right': 'Right' },
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'Which side should math be aligned to?'
+			},
+			'inlinesyntax': {
+				value: defaultConfig.inlinesyntax,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'Treat lines that start with `=` as math lines.'
+			},
+			'currency': {
+				value: defaultConfig.currency,
+				type: SettingItemType.Bool,
+				section: 'settings.calebjohn.mathmode',
+				public: true,
+				label: 'Enable currency conversions (e.g. 100 CAD in EUR).'
+			}
 		});
 
 		await joplin.contentScripts.onMessage(contentScriptId, async (message:any) => {
