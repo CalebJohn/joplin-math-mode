@@ -20,18 +20,6 @@ const clipboard = `<svg aria-hidden="true" focusable="false" data-prefix="far" d
 const check = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg>`;
 
 function plugin(CodeMirror, context) {
-	CodeMirror.defineMode('joplin-literate-math', (config) => {
-		return CodeMirror.multiplexingMode(
-			// joplin-markdown is the CodeMirror mode that joplin uses
-			// the inner style (cm-math-line) isn't used yet, but
-			// I may do something with it in the future
-			CodeMirror.getMode(config, { name: 'joplin-markdown' }),
-			{open: "```math", close: "```",
-				mode: CodeMirror.getMode(config, { name: 'joplin-inner-math' }),
-				delimStyle: 'comment', innerStyle: 'math-line'}
-  );
-	});
-
 	const math = mathjs.create(mathjs.all, {});
 
 	function truthy(s: string) {
@@ -263,6 +251,7 @@ function plugin(CodeMirror, context) {
 		if (lineInfo.widgets) {
 			cm.removeLineClass(lineInfo.handle, 'text', 'math-hidden');
 			cm.removeLineClass(lineInfo.handle, 'text', 'math-input-inline');
+			cm.removeLineClass(lineInfo.handle, 'text', 'math-input-line');
 
 			for (const wid of lineInfo.widgets) {
 				if (wid.className === 'math-result-line')
@@ -335,6 +324,8 @@ function plugin(CodeMirror, context) {
 			// I'm okay with this because I want the user to be able to select a block
 			// without accidently grabbing the result
 			cm.addLineWidget(i, res, { className: 'math-result-line', handleMouseEvents: true });
+			// This will be used to clear the colouring from cm-comment
+			cm.addLineClass(i, 'text', 'math-input-line');
 		}
 	}
 
@@ -390,7 +381,7 @@ function plugin(CodeMirror, context) {
 		});
 	}
 
-	// I ran into an odd bug dueing development where the function where wouldn't be called
+	// I ran into an odd bug during development where the function wouldn't be called
 	// when the default value of the option was true (only happened on some notes)
 	// The fix for me was to set the option to true in codeMirrorOptions instead
 	CodeMirror.defineOption('enable-math-mode', false, async function(cm, val, old) {
@@ -433,7 +424,7 @@ module.exports = {
 				return plugin(CodeMirror, context);
 			},
 			codeMirrorResources: ['addon/mode/multiplex'],
-			codeMirrorOptions: { mode: 'joplin-literate-math', 'enable-math-mode': true },
+			codeMirrorOptions: { 'enable-math-mode': true },
 			assets: function() {
 				return [
 					{ mime: 'text/css',
@@ -467,6 +458,10 @@ module.exports = {
 										}
 										.math-copy-button:hover + .math-copy-tooltip {
 											opacity: 1;
+										}
+										/* This will style math text to be the same as the notes text colour */
+										.CodeMirror-line.math-input-line span.cm-comment {
+											color: inherit;
 										}
 							`
 					}
