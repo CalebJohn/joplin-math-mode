@@ -2,7 +2,7 @@
 	"manifest_version": 1,
 	"id": "plugin.calebjohn.MathMode",
 	"app_min_version": "1.8",
-	"version": "0.5.2",
+	"version": "0.5.3",
 	"name": "Math Mode",
 	"description": "Turn your notes into a powerful calculator with inline math.",
 	"author": "Caleb John",
