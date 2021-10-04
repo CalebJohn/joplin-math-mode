@@ -9,6 +9,7 @@ const defaultConfig = {
 	global: false,
 	simplify: false,
 	bignumber: false,
+	copyButton: true,
 	displaytotal: false,
 	hide: false,
 	verbose: true,
@@ -19,7 +20,6 @@ const defaultConfig = {
 	precision: 8,
 	align: 'left',
 	inlinesyntax: true,
-	copyButton: true,
 	currency: true,
 };
 
@@ -46,7 +46,7 @@ joplin.plugins.register({
 				description: '**warning some mathjs features won\'t work**',
 			},
 			'copyButton': {
-				value: defaultConfig.inlinesyntax,
+				value: defaultConfig.copyButton,
 				type: SettingItemType.Bool,
 				section: 'settings.calebjohn.mathmode',
 				public: true,
