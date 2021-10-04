@@ -274,6 +274,7 @@ function plugin(CodeMirror, context) {
 				cm.addLineClass(i, 'wrap', 'cm-comment');
 				continue;
 			}
+			cm.addLineClass(i, 'wrap', 'cm-mm-math-block');
 
 			if (lineData.resultHidden) continue;
 
@@ -462,6 +463,12 @@ module.exports = {
 										/* This will style math text to be the same as the notes text colour */
 										.CodeMirror-line.math-input-line span.cm-comment {
 											color: inherit;
+										}
+										.cm-mm-math-block {
+										/* On macOS systems the line following a float: left will be aligned to the
+										right. We don't want it to happen, so this is placed in which prevents
+										top level lines from becoming wrapped up in the float */
+											overflow: auto;
 										}
 							`
 					}
