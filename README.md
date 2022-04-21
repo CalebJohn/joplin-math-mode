@@ -36,7 +36,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 
 
 # Installation
-- Go to `Tools -> Options -> Plugins`
+- Go to `Tools -> Options -> Plugins`(macOS: Joplin -> Preferences -> Plugins)
 - Search for "Math Mode" in the search box
 - Click Install and restart Joplin
 
