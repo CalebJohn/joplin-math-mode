@@ -40,6 +40,13 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - Search for "Math Mode" in the search box
 - Click Install and restart Joplin
 
+#### Or
+- Download the [plugin jpl](https://github.com/joplin/plugins/raw/master/plugins/plugin.calebjohn.MathMode/plugin.jpl)
+- Go to `Tools -> Options -> Plugins`
+- Click on the gear icon and select "Install from file"
+- Select the downloaded jpl file
+- Restart Joplin
+
 # Configuration
 Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The defaults can be changed under Tools -> Options -> Math Mode (Preferences on MacOS). The supported settings are (defaults listed first):
 
