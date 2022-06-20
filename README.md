@@ -48,7 +48,7 @@ Plus [many more functions](https://mathjs.org/docs/reference/functions.html) pro
 - Restart Joplin
 
 # Configuration
-Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The defaults can be changed under Tools -> Options -> Math Mode (Preferences on MacOS). The supported settings are (defaults listed first):
+Math Mode supports a small number of settings that can be adjusted by placing a "config line" inside a math block. The defaults can be changed under Tools -> Options -> Math Mode (macOS: Joplin -> Preferences -> Math Mode). The supported settings are (defaults listed first):
 
 	```math
 	global: no | yes
