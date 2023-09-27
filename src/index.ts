@@ -16,7 +16,6 @@ const defaultConfig = {
 	inline: true,
 	notation: 'auto',
 	lowerExp: -3,
-	upperExp: 9,
 	precision: 8,
 	align: 'left',
 	inlinesyntax: true,
@@ -87,15 +86,6 @@ joplin.plugins.register({
 				advanced: true,
 				label: 'Lower boundary to format a number as an exponent (auto notation only)'
 			},
-			'upperExp': {
-				value: defaultConfig.upperExp,
-				type: SettingItemType.Int,
-				section: 'settings.calebjohn.mathmode',
-				step: 1,
-				public: true,
-				advanced: true,
-				label: 'Upper boundary to format a number as an exponent (auto notation only)'
-			},
 			'precision': {
 				value: defaultConfig.precision,
 				type: SettingItemType.Int,
@@ -104,7 +94,7 @@ joplin.plugins.register({
 				maximum: 16,
 				step: 1,
 				public: true,
-				label: 'How many digits of display precision should math results have?'
+				label: 'How many significant digits should math results have?'
 			},
 			'align': {
 				value: defaultConfig.align,
@@ -143,7 +133,6 @@ joplin.plugins.register({
 					inline: await joplin.settings.value('inline') ? 'yes': 'no',
 					notation: await joplin.settings.value('notation'),
 					lowerExp: await joplin.settings.value('lowerExp'),
-					upperExp: await joplin.settings.value('upperExp'),
 					precision: await joplin.settings.value('precision'),
 					align: await joplin.settings.value('align'),
 					inlinesyntax: await joplin.settings.value('inlinesyntax'),
