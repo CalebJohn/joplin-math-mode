@@ -80,7 +80,7 @@ Where
 
 `notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results.
 
-`precision` the number of significant digits, 0 to show all. See [mathjs docs](https://mathjs.org/docs/reference/functions/format.html).
+`precision` the number of digits in a result (if notation is "fixed", then precision is decimal places), 0 to show all. See [mathjs docs](https://mathjs.org/docs/reference/functions/format.html).
 
 `align` place the result on the left or right of the editor window.
 

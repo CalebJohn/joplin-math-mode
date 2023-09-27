@@ -94,7 +94,7 @@ joplin.plugins.register({
 				maximum: 16,
 				step: 1,
 				public: true,
-				label: 'How many significant digits should math results have?'
+				label: 'How many digits should math results have?'
 			},
 			'align': {
 				value: defaultConfig.align,
