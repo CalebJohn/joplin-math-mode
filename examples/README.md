@@ -13,7 +13,7 @@ Another `total` example that demonstrates the explicit addition and summation sy
 
 ## Euro Trip
 Example that demonstrates the use of currency conversion. Also uses the `total` variable to sum up the daily cost of a trip.
-![example of foreign trip planning]('./euro_trip.png)
+![example of foreign trip planning](./euro_trip.png)
 
 
 # Advanced
