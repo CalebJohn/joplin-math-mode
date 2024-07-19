@@ -10,6 +10,7 @@
 	"repository_url": "https://github.com/CalebJohn/joplin-math-mode",
 	"keywords": ["calculator", "math", "mathjs"],
   "categories": ["editor", "productivity"],
+  "platforms": ["desktop", "mobile"],
   "screenshots": [
     {
       "src": "examples/road_trip.png",
