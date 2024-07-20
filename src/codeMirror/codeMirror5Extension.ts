@@ -1,13 +1,9 @@
-import { get_exchange_rates } from '../exchangeRate'
 import { ContentScriptContext } from './types';
 import { process_all, trim_lines } from './utils/mathUtils';
-import { equation_result_collapsed, equation_result_separator } from './constants';
 import { createResultElement } from './utils/createResultElement';
-const mathjs = require('mathjs');
+import { updateRates } from './utils/updateRates';
 
 export function codeMirror5Extension(CodeMirror: any, context: ContentScriptContext) {
-	const math = mathjs.create(mathjs.all, {});
-
 	function reprocess(cm: any) {
 		const lines = cm.getValue('\n').split('\n');
 		const lineData = process_all(lines, { globalConfig: cm.state.mathMode.globalConfig });
@@ -110,19 +106,6 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 		}, 300);
 	}
 
-	function update_rates(cm: any) {
-		get_exchange_rates().then(rates => {;
-			math.createUnit(rates.base);
-			math.createUnit(rates.base.toLowerCase(), math.unit(1, rates.base));
-			Object.keys(rates.rates)
-				.forEach((currency) => {
-					math.createUnit(currency, math.unit(1/rates.rates[currency], rates.base));
-					math.createUnit(currency.toLowerCase(), math.unit(1/rates.rates[currency], rates.base));
-				});
-			reprocess(cm);
-		});
-	}
-
 	// I ran into an odd bug during development where the function wouldn't be called
 	// when the default value of the option was true (only happened on some notes)
 	// The fix for me was to set the option to true in codeMirrorOptions instead
@@ -137,9 +120,14 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 		if (val) {
 			const globalConfig = await context.postMessage({name: 'getConfig'});
 
+			const updateRatesAndRerender = async () => {
+				await updateRates();
+				reprocess(cm);
+			};
+
 			let interval = null;
 			if (globalConfig.currency) {
-				interval = setInterval(() => { update_rates(cm); }, 1000*60*60*24);
+				interval = setInterval(updateRatesAndRerender, 1000*60*60*24);
 			}
 
 			cm.state.mathMode = {
@@ -150,7 +138,7 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 			};
 
 			if (globalConfig.currency) {
-				update_rates(cm);
+				updateRatesAndRerender();
 			}
 			reprocess(cm);
 			// We need to process all blocks on the next update

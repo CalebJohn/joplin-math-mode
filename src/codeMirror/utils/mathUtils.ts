@@ -2,7 +2,7 @@ import { inline_math_regex } from "../constants";
 import { GlobalConfig, MathBlockType } from "../types";
 
 const mathjs = require('mathjs');
-const math = mathjs.create(mathjs.all, {});
+export const math = mathjs.create(mathjs.all, {});
 
 interface Options {
 	globalConfig: GlobalConfig;
@@ -31,41 +31,74 @@ export interface ExpressionLineData {
 
 type LineData = ConfigLineData|ExpressionLineData;
 
+export interface ProcessContext {
+	total: string;
+	config: GlobalConfig & { global?: string };
+	globalConfig: GlobalConfig;
+	scope: Record<string, unknown>;
+}
+
+export const defaultProcessContext = (globalConfig: GlobalConfig): ProcessContext => ({
+	total: '',
+	config: {...globalConfig},
+	globalConfig,
+	scope: { total: '' },
+});
+
+export function process_next(line: string, context: ProcessContext): [LineData, ProcessContext] {
+	let config = context.config;
+	let globalConfig = context.globalConfig;
+	let block_total = context.total;
+	let scope = context.scope;
+
+	let lineData: LineData|null;
+	if (!line || line === '```math') {
+		block_total = '';
+	}
+	else if (line === '```') {
+		config = Object.assign({}, globalConfig);
+		block_total = '';
+	}
+	else if (line.includes(':')) {
+		lineData = process_config(line, config);
+	}
+	else {
+		// Allow the user to redefine the total variable if they want
+		const localScope = Object.assign({total: block_total}, scope);
+		const data = process_expression_line(line, localScope, config, block_total);
+		lineData = data;
+		// Update the scope
+		scope = Object.assign(scope, localScope);
+		block_total = data.total;
+	}
+
+	if (truthy(config.global)) {
+		globalConfig = Object.assign(globalConfig, config, {global: 'false'});
+	}
+
+	const newContext: ProcessContext = {
+		total: block_total,
+		globalConfig,
+		config,
+		scope,
+	};
+	return [ lineData, newContext ];
+}
+
 export function process_all(allLines: string[], options: Options) {
 	const allow_inline = options.globalConfig.inlinesyntax;
 	const lines = trim_lines(allLines, allow_inline);
 
+	const lineData = [];
+
 	// scope is global to the note
-	let scope = {};
-	let lineData: Record<number, LineData> = {};
-	let globalConfig = {global: 'true', ...options.globalConfig};
-	let config = Object.assign({}, globalConfig);
-	let block_total = '';
+	let context = defaultProcessContext(options.globalConfig);
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
-
-		if (!line || line === '```math') {
-			block_total = '';
-		}
-		else if (line === '```') {
-			config = Object.assign({}, globalConfig);
-			block_total = '';
-		}
-		else if (line.includes(':')) {
-			lineData[i] = process_config(line, config);
-		}
-		else {
-			// Allow the user to redefine the total variable if they want
-			const localScope = Object.assign({total: block_total}, scope);
-			const data = process_line(line, localScope, config, block_total);
-			lineData[i] = data;
-			// Update the scope
-			scope = Object.assign(scope, localScope);
-			block_total = data.total;
-		}
-
-		if (truthy(config.global)) {
-			globalConfig = Object.assign(globalConfig, config, {global: 'false'});
+		const [ nextLineData, newContext ] = process_next(line, context);
+		context = newContext;
+		if (nextLineData) {
+			lineData[i] = nextLineData;
 		}
 	}
 
@@ -199,7 +232,7 @@ function math_contains_symbol(parsed: any, name: string) {
 	return filtered.length > 0;
 }
 
-function process_line(line: string, scope: any, config: any, block_total: string): ExpressionLineData {
+function process_expression_line(line: string, scope: any, config: any, block_total: string): ExpressionLineData {
 	let p = null;
 	let result = '';
 	let contains_total = false;

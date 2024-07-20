@@ -52,10 +52,6 @@ module.exports = {
 										.CodeMirror-line.math-input-line span.cm-comment {
 											color: inherit;
 										}
-										/* CodeMirror 6 only: */
-										.cm-editor .math-result.math-inline {
-											display: inline-block;
-										}
 										.cm-mm-math-block {
 										/* On macOS systems the line following a float: left will be aligned to the
 										right. We don't want it to happen, so this is placed in which prevents
