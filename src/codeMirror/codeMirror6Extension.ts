@@ -2,16 +2,17 @@ import { ContentScriptContext } from "./types";
 import type { Decoration, DecorationSet } from '@codemirror/view';
 import type { Text } from '@codemirror/state';
 
-import { requireCodeMirrorView, requireCodeMirrorState } from "./utils/codeMirror6Requires";
+import { requireCodeMirrorView, requireCodeMirrorState, requireCodeMirrorLanguage } from "./utils/codeMirror6Requires";
 import { ExpressionLineData, lineDataEqual, LineDataType, process_all } from "./utils/mathUtils";
 import { createResultElement } from "./utils/createResultElement";
 import { updateRates } from "./utils/updateRates";
-import { inline_math_regex } from "./constants";
+import { blockMathRegex, inline_math_regex } from "./constants";
 
 
 export const codeMirror6Extension = async (editorControl: any, context: ContentScriptContext) => {
 	const { Decoration, WidgetType, EditorView } = requireCodeMirrorView();
 	const { RangeSetBuilder, StateField, StateEffect } = requireCodeMirrorState();
+	const { syntaxTree } = requireCodeMirrorLanguage();
 
 	class MathResultWidget extends WidgetType {
 		public constructor(private lineData: ExpressionLineData) {
@@ -86,7 +87,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 				needsRefresh = true;
 			} else if (tr.docChanged) {
 				// fromB, toB: Positions in the new document.
-				tr.changes.iterChangedRanges((_fromA, _toA, fromB, toB) => {
+				tr.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
 					if (needsRefresh) return;
 
 					const fromLine = tr.newDoc.lineAt(fromB);
@@ -102,7 +103,33 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 
 					// Handles the case where a user starts a new math region
 					if (!needsRefresh) {
-						needsRefresh = !!fromLine.text.match(inline_math_regex);
+						needsRefresh = !!fromLine.text.match(inline_math_regex) || !!fromLine.text.match(blockMathRegex);
+					}
+
+					if (!needsRefresh) {
+						const newText = tr.newDoc.sliceString(fromB, toB);
+						needsRefresh = !!newText.match(blockMathRegex);
+					}
+
+					// Handles the case where a user deletes a math region
+					if (!needsRefresh) {
+						const oldText = tr.startState.doc.sliceString(fromA, toA);
+						needsRefresh = !!oldText.match(blockMathRegex) || !!oldText.match(inline_math_regex);
+					}
+
+					if (!needsRefresh) {
+						syntaxTree(tr.startState).iterate({
+							from: fromA, to: toA,
+							enter: node => {
+								if (node.name === 'FencedCode') {
+									const fromLine = tr.startState.doc.lineAt(node.from);
+									needsRefresh ||= !!fromLine.text.match(blockMathRegex);
+								}
+
+								// Search until needsRefresh is true.
+								return !needsRefresh;
+							},
+						});
 					}
 				});
 			}
@@ -133,7 +160,10 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 			},
 			'& .math-result': {
 				opacity: 0.7,
-			}
+			},
+			'& .math-result.math-inline': {
+				display: 'inline',
+			},
 		}),
 	]);
 
