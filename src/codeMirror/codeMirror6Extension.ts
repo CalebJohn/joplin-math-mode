@@ -147,20 +147,26 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 	editorControl.addExtension([
 		decorations_field,
 		EditorView.baseTheme({
-			'& .math-result-right.math-inline': {
-				display: 'inline-block',
-				float: 'inline-end',
-				textAlign: 'inline-end',
-			},
-			'& .math-input-inline': {
-				float: 'none',
-			},
-			'& .math-container-inline': {
-				// Prevent the result from overlapping the next line
-				display: 'flow-root',
+			'& .math-container-inline.cm-line': {
+				display: 'flex',
+				flexDirection: 'row',
+				flexWrap: 'wrap',
 			},
 			'& .math-result': {
+				flexGrow: 1,
 				opacity: 0.7,
+				pointerEvents: 'none',
+			},
+			'& .math-result > *': {
+				pointerEvents: 'auto',
+			},
+
+			// Override the CM5 styles (which are also applied to CM6)
+			'& .math-result.math-result-right.math-inline': {
+				textAlign: 'inline-end',
+			},
+			'& .math-input-inline, & .math-result': {
+				float: 'none',
 			},
 			'& .math-result.math-inline': {
 				display: 'inline',
