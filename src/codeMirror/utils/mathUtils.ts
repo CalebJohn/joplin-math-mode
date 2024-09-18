@@ -105,7 +105,7 @@ export function process_all(allLines: string[], options: Options) {
 	return lineData;
 }
 
-function shallowEqual(a: Record<string, any>, b: Record<string, any>) {
+function shallow_equal(a: Record<string, any>, b: Record<string, any>) {
 	if (Object.keys(a).length !== Object.keys(b).length) return false;
 
 	for (const [key, value] of Object.entries(a)) {
@@ -118,7 +118,7 @@ function shallowEqual(a: Record<string, any>, b: Record<string, any>) {
 }
 
 export function lineDataEqual(a: LineData, b: LineData) {
-	return shallowEqual(a, b);
+	return shallow_equal(a, b);
 }
 
 function truthy(s: string) {

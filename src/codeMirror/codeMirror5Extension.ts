@@ -1,7 +1,7 @@
 import { ContentScriptContext } from './types';
 import { process_all, trim_lines } from './utils/mathUtils';
-import { createResultElement } from './utils/createResultElement';
-import { updateRates } from './utils/updateRates';
+import { create_result_element } from './utils/create_result_element';
+import { update_rates as update_rates } from './utils/update_rates';
 
 export function codeMirror5Extension(CodeMirror: any, context: ContentScriptContext) {
 	function reprocess(cm: any) {
@@ -52,7 +52,7 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 			else if (lineData.inline)
 				cm.addLineClass(i, 'text', 'math-input-inline');
 
-			const res = createResultElement(lineData);
+			const res = create_result_element(lineData);
 
 			// handleMouseEvents gives control of mouse handling for the widget to codemirror
 			// This is necessary to get the cursor to be placed in the right location ofter
@@ -120,14 +120,14 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 		if (val) {
 			const globalConfig = await context.postMessage({name: 'getConfig'});
 
-			const updateRatesAndRerender = async () => {
-				await updateRates();
+			const update_rates_and_rerender = async () => {
+				await update_rates();
 				reprocess(cm);
 			};
 
 			let interval = null;
 			if (globalConfig.currency) {
-				interval = setInterval(updateRatesAndRerender, 1000*60*60*24);
+				interval = setInterval(update_rates_and_rerender, 1000*60*60*24);
 			}
 
 			cm.state.mathMode = {
@@ -138,7 +138,7 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 			};
 
 			if (globalConfig.currency) {
-				updateRatesAndRerender();
+				update_rates_and_rerender();
 			}
 			reprocess(cm);
 			// We need to process all blocks on the next update

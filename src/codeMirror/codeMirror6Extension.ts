@@ -2,17 +2,17 @@ import { ContentScriptContext } from "./types";
 import type { Decoration, DecorationSet } from '@codemirror/view';
 import type { Text } from '@codemirror/state';
 
-import { requireCodeMirrorView, requireCodeMirrorState, requireCodeMirrorLanguage } from "./utils/codeMirror6Requires";
+import { require_codemirror_view, require_codemirror_state, require_codemirror_language } from "./utils/requires";
 import { ExpressionLineData, lineDataEqual, LineDataType, process_all } from "./utils/mathUtils";
-import { createResultElement } from "./utils/createResultElement";
-import { updateRates } from "./utils/updateRates";
-import { blockMathRegex, inline_math_regex } from "./constants";
+import { create_result_element } from "./utils/create_result_element";
+import { update_rates } from "./utils/update_rates";
+import { block_math_regex, inline_math_regex } from "./constants";
 
 
 export const codeMirror6Extension = async (editorControl: any, context: ContentScriptContext) => {
-	const { Decoration, WidgetType, EditorView } = requireCodeMirrorView();
-	const { RangeSetBuilder, StateField, StateEffect } = requireCodeMirrorState();
-	const { syntaxTree } = requireCodeMirrorLanguage();
+	const { Decoration, WidgetType, EditorView } = require_codemirror_view();
+	const { RangeSetBuilder, StateField, StateEffect } = require_codemirror_state();
+	const { syntaxTree } = require_codemirror_language();
 
 	class MathResultWidget extends WidgetType {
 		public constructor(private lineData: ExpressionLineData) {
@@ -24,118 +24,119 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 		}
 
 		public toDOM() {
-			return createResultElement(this.lineData);
+			return create_result_element(this.lineData);
 		}
 	}
 
-	const configDecoration = Decoration.line({
+	const config_decoration = Decoration.line({
 		attributes: { class: 'cm-comment cm-math-config' },
 	});
-	const inputHiddenDecoration = Decoration.mark({
+	const input_hidden_decoration = Decoration.mark({
 		attributes: { class: 'math-hidden' },
 	});
-	const inputInlineDecoration = Decoration.mark({
+	const input_inline_decoration = Decoration.mark({
 		attributes: { class: 'math-input-inline' },
 	});
-	const inlineContainerDecoration = Decoration.line({
+	const inline_container_decoration = Decoration.line({
 		attributes: { class: 'math-container-inline' },
 	});
 
-	const globalConfig = await context.postMessage({name: 'getConfig'});
-	const buildDecorations = (doc: Text) => {
+	const global_config = await context.postMessage({name: 'getConfig'});
+	const build_decorations = (doc: Text) => {
 		const lines = doc.toString().split('\n');
-		const lineData = process_all(lines, { globalConfig });
+		const line_data = process_all(lines, { globalConfig: global_config });
 
-		const decorationBuilder = new RangeSetBuilder<Decoration>();
+		const decoration_builder = new RangeSetBuilder<Decoration>();
 		for (let i = 1; i <= doc.lines; i++) {
 			const line = doc.line(i);
-			const data = lineData[i - 1];
+			const data = line_data[i - 1];
 			if (!data) continue;
 
 			if (data.type === LineDataType.Config) {
-				decorationBuilder.add(line.from, line.from, configDecoration);
+				decoration_builder.add(line.from, line.from, config_decoration);
 			} else {
 				if (data.resultHidden) continue;
 				if (data.inputHidden) {
-					decorationBuilder.add(line.from, line.to, inputHiddenDecoration);
+					decoration_builder.add(line.from, line.to, input_hidden_decoration);
 				} else if (data.inline) {
-					decorationBuilder.add(line.from, line.from, inlineContainerDecoration);
-					decorationBuilder.add(line.from, line.to, inputInlineDecoration);
+					decoration_builder.add(line.from, line.from, inline_container_decoration);
+					decoration_builder.add(line.from, line.to, input_inline_decoration);
 				}
 
-				const resultWidgetDecoration = Decoration.widget({
+				const result_widget_decoration = Decoration.widget({
 					widget: new MathResultWidget(data),
 					side: 1,
 					block: !data.inline,
 				});
 
-				decorationBuilder.add(line.to, line.to, resultWidgetDecoration);
+				decoration_builder.add(line.to, line.to, result_widget_decoration);
 			}
 		}
-		return decorationBuilder.finish();
+		return decoration_builder.finish();
 	};
 
-	const forceRefresh = StateEffect.define<boolean>({});
+	const force_refresh_effect = StateEffect.define<boolean>({});
 
 	// See https://codemirror.net/examples/decoration/
-	const decorationsField = StateField.define<DecorationSet>({
-		create: (state) => buildDecorations(state.doc),
+	const decorations_field = StateField.define<DecorationSet>({
+		create: (state) => build_decorations(state.doc),
 		update: (decorations, tr) => {
 			decorations = decorations.map(tr.changes);
-			let needsRefresh = false;
-			if (tr.reconfigured || tr.effects.some(c => c.is(forceRefresh))) {
-				needsRefresh = true;
+			let needs_refresh = false;
+			if (tr.reconfigured || tr.effects.some(c => c.is(force_refresh_effect))) {
+				needs_refresh = true;
 			} else if (tr.docChanged) {
-				// fromB, toB: Positions in the new document.
-				tr.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
-					if (needsRefresh) return;
+				// from_b, to_b: Positions in the new document.
+				tr.changes.iterChangedRanges((from_a, to_a, from_b, to_b) => {
+					if (needs_refresh) return;
 
-					const fromLine = tr.newDoc.lineAt(fromB);
-					const toLine = tr.newDoc.lineAt(toB);
+					const from_line = tr.newDoc.lineAt(from_b);
+					const to_line = tr.newDoc.lineAt(to_b);
 
 					let hasOverlap = false;
-					decorations.between(fromLine.from, toLine.to, () => {
+					decorations.between(from_line.from, to_line.to, () => {
 						hasOverlap = true;
 						return false;
 					});
 
-					needsRefresh ||= hasOverlap;
+					needs_refresh ||= hasOverlap;
 
 					// Handles the case where a user starts a new math region
-					if (!needsRefresh) {
-						needsRefresh = !!fromLine.text.match(inline_math_regex) || !!fromLine.text.match(blockMathRegex);
+					if (!needs_refresh) {
+						needs_refresh = !!from_line.text.match(inline_math_regex) || !!from_line.text.match(block_math_regex);
 					}
 
-					if (!needsRefresh) {
-						const newText = tr.newDoc.sliceString(fromB, toB);
-						needsRefresh = !!newText.match(blockMathRegex);
+					if (!needs_refresh) {
+						const new_text = tr.newDoc.sliceString(from_b, to_b);
+						// Handles the case where a ```math block is pasted:
+						needs_refresh = !!new_text.match(block_math_regex);
 					}
 
 					// Handles the case where a user deletes a math region
-					if (!needsRefresh) {
-						const oldText = tr.startState.doc.sliceString(fromA, toA);
-						needsRefresh = !!oldText.match(blockMathRegex) || !!oldText.match(inline_math_regex);
+					if (!needs_refresh) {
+						const old_text = tr.startState.doc.sliceString(from_a, to_a);
+						needs_refresh = !!old_text.match(block_math_regex) || !!old_text.match(inline_math_regex);
 					}
 
-					if (!needsRefresh) {
+					if (!needs_refresh) {
 						syntaxTree(tr.startState).iterate({
-							from: fromA, to: toA,
+							from: from_a, to: to_a,
 							enter: node => {
 								if (node.name === 'FencedCode') {
 									const fromLine = tr.startState.doc.lineAt(node.from);
-									needsRefresh ||= !!fromLine.text.match(blockMathRegex);
+									needs_refresh ||= !!fromLine.text.match(block_math_regex);
 								}
 
-								// Search until needsRefresh is true.
-								return !needsRefresh;
+								// Search until needs_refresh is true.
+								return !needs_refresh;
 							},
 						});
 					}
 				});
 			}
 
-			if (needsRefresh) {
-				return buildDecorations(tr.newDoc);
+			if (needs_refresh) {
+				return build_decorations(tr.newDoc);
 			} else {
 				return decorations;
 			}
@@ -144,7 +145,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 	});
 
 	editorControl.addExtension([
-		decorationsField,
+		decorations_field,
 		EditorView.baseTheme({
 			'& .math-result-right.math-inline': {
 				display: 'inline-block',
@@ -167,14 +168,14 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 		}),
 	]);
 
-	if (globalConfig.currency) {
-		const updateRatesAndRerender = () => {
-			updateRates().then(() => {
+	if (global_config.currency) {
+		const update_rates_and_rerender = () => {
+			update_rates().then(() => {
 				editorControl.editor.dispatch({
-					effects: [ forceRefresh.of(true) ]
+					effects: [ force_refresh_effect.of(true) ]
 				});
 			});
 		};
-		updateRatesAndRerender();
+		update_rates_and_rerender();
 	}
 }

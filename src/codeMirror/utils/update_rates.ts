@@ -1,7 +1,7 @@
 import { get_exchange_rates } from "../../exchangeRate";
 import { math } from "./mathUtils";
 
-export async function updateRates() {
+export async function update_rates() {
 	const rates = await get_exchange_rates();
 	math.createUnit(rates.base);
 	math.createUnit(rates.base.toLowerCase(), math.unit(1, rates.base));
