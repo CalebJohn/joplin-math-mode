@@ -75,8 +75,10 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 		return decoration_builder.finish();
 	};
 
+	// Can be `.dispatch`ed to force math to refresh.
 	const force_refresh_effect = StateEffect.define<boolean>({});
 
+	// An editor extension that handles decoration refresh.
 	// See https://codemirror.net/examples/decoration/
 	const decorations_field = StateField.define<DecorationSet>({
 		create: (state) => build_decorations(state.doc),
@@ -108,7 +110,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 
 					if (!needs_refresh) {
 						const new_text = tr.newDoc.sliceString(from_b, to_b);
-						// Handles the case where a ```math block is pasted:
+						// Handles the case where a ```math block is pasted into the document:
 						needs_refresh = !!new_text.match(block_math_regex);
 					}
 
@@ -118,6 +120,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 						needs_refresh = !!old_text.match(block_math_regex) || !!old_text.match(inline_math_regex);
 					}
 
+					// Handles the case where a line within a ```math block is edited.
 					if (!needs_refresh) {
 						syntaxTree(tr.startState).iterate({
 							from: from_a, to: to_a,
@@ -161,10 +164,12 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 				pointerEvents: 'auto',
 			},
 
-			// Override the CM5 styles (which are also applied to CM6)
 			'& .math-result.math-result-right.math-inline': {
+				// Right-align the text (or left-align if right-to-left is enabled)
 				textAlign: 'inline-end',
 			},
+
+			// Override the CM5 styles (which are also applied to CM6)
 			'& .math-input-inline, & .math-result': {
 				float: 'none',
 			},

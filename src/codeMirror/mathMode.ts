@@ -18,6 +18,9 @@ module.exports = {
 				return [
 					{ mime: 'text/css',
 						inline: true,
+
+						// While mostly intended for the CodeMirror 5 editor, these styles apply to both
+						// CodeMirror 5 and CodeMirror 6.
 						text: `.math-result-line {
 											opacity: 0.75;
 											display: block;
