@@ -17,7 +17,12 @@ export const create_result_element = (lineData: ExpressionLineData) => {
 	}
 
 	const res = document.createElement('div');
-	res.setAttribute('class', 'math-result');
+	res.classList.add('math-result');
+	if (!lineData.inline) {
+		// The cm-line class is needed in CodeMirror 6 when the "editor maximum width" Joplin setting is set.
+		// Without it, the math result elements do not respect the maximum width setting:
+		res.classList.add('cm-line');
+	}
 
 	const txt = document.createElement('span');
 	txt.setAttribute('class', 'math-copy-tooltip');
