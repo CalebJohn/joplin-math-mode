@@ -29,7 +29,7 @@ export interface ExpressionLineData {
 	copyButton: boolean,
 }
 
-type LineData = ConfigLineData|ExpressionLineData;
+export type LineData = ConfigLineData|ExpressionLineData;
 
 export interface ProcessContext {
 	total: string;

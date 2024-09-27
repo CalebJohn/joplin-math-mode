@@ -1,5 +1,5 @@
 import { ContentScriptContext } from './types';
-import { process_all, trim_lines } from './utils/mathUtils';
+import { LineData, LineDataType, process_all, trim_lines } from './utils/mathUtils';
 import { create_result_element } from './utils/create_result_element';
 import { update_rates as update_rates } from './utils/update_rates';
 
@@ -35,11 +35,11 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 
 			clear_math_widgets(cm, line);
 
-			const lineData = cm.state.mathMode.lineData[i];
+			const lineData: LineData = cm.state.mathMode.lineData[i];
 
 			if (!lineData) continue;
 
-			if (lineData.isConfig) {
+			if (lineData.type === LineDataType.Config) {
 				cm.addLineClass(i, 'wrap', 'cm-comment');
 				continue;
 			}
