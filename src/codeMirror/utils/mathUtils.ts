@@ -42,7 +42,7 @@ export const defaultProcessContext = (globalConfig: GlobalConfig): ProcessContex
 	total: '',
 	config: {...globalConfig},
 	globalConfig,
-	scope: { total: '' },
+	scope: { },
 });
 
 export function process_next(line: string, context: ProcessContext): [LineData, ProcessContext] {
@@ -68,12 +68,12 @@ export function process_next(line: string, context: ProcessContext): [LineData, 
 		const data = process_expression_line(line, localScope, config, block_total);
 		lineData = data;
 		// Update the scope
-		scope = Object.assign(scope, localScope);
+		scope = {...scope, ...localScope};
 		block_total = data.total;
 	}
 
 	if (truthy(config.global)) {
-		globalConfig = Object.assign(globalConfig, config, {global: 'false'});
+		globalConfig = { ...globalConfig, ...config, global: 'no' };
 	}
 
 	const newContext: ProcessContext = {
