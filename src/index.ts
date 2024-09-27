@@ -151,7 +151,7 @@ joplin.plugins.register({
 		await joplin.contentScripts.register(
 			ContentScriptType.CodeMirrorPlugin,
 			contentScriptId,
-			'./mathMode.js'
+			'./codeMirror/mathMode.js'
 		);
 	},
 });

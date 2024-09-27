@@ -8,10 +8,12 @@ async function get_rates_from_euro_central() {
 		.then(text => (new window.DOMParser()).parseFromString(text, "text/xml"))
 		.then(xml => {
 			let nodes = xml.getElementsByTagName("Cube");
-			let rates = {};
+			let rates: Record<string, number> = {};
 			for (let node of nodes) {
-				if (node.attributes && node.attributes['currency']) {
-					rates[node.attributes['currency'].value] = parseFloat(node.attributes['rate'].value);
+				if (node.attributes && 'currency' in node.attributes && 'rate' in node.attributes) {
+					const currencyAttr: any = node.attributes['currency'];
+					const rateAttr: any = node.attributes['rate'];
+					rates[currencyAttr.value] = parseFloat(rateAttr.value);
 				}
 			}
 			return { rates: rates, base: 'EUR' };

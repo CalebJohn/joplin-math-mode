@@ -1,6 +1,5 @@
 {
 	"extraScripts": [
-		"mathMode.ts",
-		"exchangeRate.ts"
+		"codeMirror/mathMode.ts"
 	]
 }
