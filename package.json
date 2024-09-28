@@ -1,6 +1,6 @@
 {
   "name": "joplin-plugin-math-mode",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "homepage": "https://github.com/CalebJohn/joplin-math-mode",
   "description": "",
   "scripts": {
@@ -11,7 +11,6 @@
     "updatetags": "LOGS=$(git log $(git describe --tags --abbrev=0 HEAD~1)..HEAD~1 --oneline) && git tag -fam \"v$npm_package_version\n\n$LOGS\" v$npm_package_version && git tag -fa v$npm_package_version",
     "postversion": "npm run updatetags && git push origin master --tags",
     "version": "sed -i '/\\\"version\\\": \\\"/s/[^\\\"]*\\\",/'\"$npm_package_version\\\",/\" src/manifest.json && git add src/manifest.json"
-
   },
   "keywords": [
     "joplin-plugin",
