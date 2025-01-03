@@ -25,7 +25,7 @@ const defaultConfig = {
 
 joplin.plugins.register({
 	onStart: async function() {
-		// // // // // // // // // // // // // // // 
+		// // // // // // // // // // // // // // //
 		// Handle Settings
 		// // // // // // // // // // // // // // //
 
@@ -121,6 +121,20 @@ joplin.plugins.register({
 			}
 		});
 
+		// // // // // // // // // // // // // // //
+		// Register Content Scripts
+		// // // // // // // // // // // // // // //
+
+		await joplin.contentScripts.register(
+			ContentScriptType.CodeMirrorPlugin,
+			contentScriptId,
+			'./codeMirror/mathMode.js'
+		);
+
+		// // // // // // // // // // // // // // //
+		// Register Content Script Messaging
+		// // // // // // // // // // // // // // //
+
 		await joplin.contentScripts.onMessage(contentScriptId, async (message:any) => {
 			if (message.name === 'getConfig') {
 				return {
@@ -143,15 +157,5 @@ joplin.plugins.register({
 
 			return "Error: " + message + " is not a valid message";
 		});
-
-		// // // // // // // // // // // // // // // 
-		// Register Content Scripts
-		// // // // // // // // // // // // // // //
-
-		await joplin.contentScripts.register(
-			ContentScriptType.CodeMirrorPlugin,
-			contentScriptId,
-			'./codeMirror/mathMode.js'
-		);
 	},
 });
