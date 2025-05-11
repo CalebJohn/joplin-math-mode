@@ -62,6 +62,9 @@ export function process_next(line: string, context: ProcessContext): [LineData, 
 	else if (line.includes(':')) {
 		lineData = process_config(line, config);
 	}
+	else if (line.trim().startsWith('#') || line.trim().startsWith('//')) {
+		// Ignore comment lines
+	}
 	else {
 		// Allow the user to redefine the total variable if they want
 		const localScope = Object.assign({total: block_total}, scope);
