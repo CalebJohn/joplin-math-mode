@@ -106,6 +106,32 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 		}, 300);
 	}
 
+	async function getConfig() {
+		// There is a race condition in the Joplin initialization code
+		// Sometimes the onMessage isn't ready yet and will return `undefined`
+		// This code will perform an exponential backoff and poll settings
+		// until something is returned
+		let delay = 50; // ms
+		let attempts = 0;
+		const maxRetries = 8; // 8 attempts is about 12 seconds of waiting
+
+		while (attempts < maxRetries) {
+			attempts++;
+
+			// Start by waiting, because the route is rarely connected yet
+			await new Promise(resolve => setTimeout(resolve, delay));
+
+			const config = await context.postMessage({name: 'getConfig'});
+			if (config !== undefined) {
+				return config;
+			}
+
+			delay = delay * 2
+		}
+
+		throw new Error(`Failed to get data after ${maxRetries} attempts`);
+	}
+
 	// I ran into an odd bug during development where the function wouldn't be called
 	// when the default value of the option was true (only happened on some notes)
 	// The fix for me was to set the option to true in codeMirrorOptions instead
@@ -118,7 +144,7 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 		}
 		// setup
 		if (val) {
-			const globalConfig = await context.postMessage({name: 'getConfig'});
+			const globalConfig = await getConfig();
 
 			const update_rates_and_rerender = async () => {
 				await update_rates();
