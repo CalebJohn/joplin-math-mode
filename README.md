@@ -26,6 +26,8 @@ Try some of these!
 	```
 	
 	```math
+	// You can leave comments inside math blocks!
+	# Just start a line with # or //
 	combinations(6, 3)
 	permutations(6, 3)
 	```
