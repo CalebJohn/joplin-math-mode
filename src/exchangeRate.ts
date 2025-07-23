@@ -1,13 +1,13 @@
-
+const proxyUrl = "https://api.allorigins.win/raw?url=";
 const euroCentralUrl = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+const proxiedUrl = proxyUrl + encodeURIComponent(euroCentralUrl);
 
 
-async function get_rates_from_euro_central() {
-	return fetch(euroCentralUrl)
+async function get_rates_from_euro_central(url: string) {
+	return fetch(url)
 		.then(res => res.text())
 		.then(text => (new window.DOMParser()).parseFromString(text, "text/xml"))
 		.then(xml => {
-			console.log("Parsing returned rates");
 			let nodes = xml.getElementsByTagName("Cube");
 			let rates: Record<string, number> = {};
 			for (let node of nodes) {
@@ -18,14 +18,17 @@ async function get_rates_from_euro_central() {
 				}
 			}
 			return { rates: rates, base: 'EUR' };
-		})
-		.catch(error => {
-			console.error(error);
-			let rates: Record<string, number> = {};
-			return { rates: rates, base: 'EUR' };
 		});
 }
 
+
 export async function get_exchange_rates() {
-	return get_rates_from_euro_central();
+	try {
+		return await get_rates_from_euro_central(euroCentralUrl);
+	} catch {
+		// Mobile app rejects the raw url for CORS issues
+		// This uses an external server to proxy the content and get around CORS,
+		// I don't know how stable that is, so this is just a fallback
+		return await get_rates_from_euro_central(proxiedUrl);
+	}
 }
