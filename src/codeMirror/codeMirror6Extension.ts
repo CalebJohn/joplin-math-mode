@@ -181,6 +181,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 
 	if (global_config.currency) {
 		const update_rates_and_rerender = () => {
+			console.log("Begin rate update");
 			update_rates().then(() => {
 				editorControl.editor.dispatch({
 					effects: [ force_refresh_effect.of(true) ]
