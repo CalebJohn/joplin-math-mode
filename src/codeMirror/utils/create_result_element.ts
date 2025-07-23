@@ -7,10 +7,40 @@ const clipboard = `<svg aria-hidden="true" focusable="false" data-prefix="far" d
 // Font Awesome check
 const check = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg>`;
 
+const format_thousands_separator = (
+  input: string,
+  separator: string = ','
+): string  => {
+  const formatNumber = (num: number): string => {
+    const numStr = num.toString();
+    const parts = numStr.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1] ? '.' + parts[1] : '';
+
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+
+    return formattedInteger + decimalPart;
+  };
+
+	// Regex to match numbers (including decimals and negative numbers)
+	// This matches: optional minus, digits, optional decimal point and more digits
+	return input.replace(/-?\d+(?:\.\d+)?/g, (match) => {
+		const num = parseFloat(match);
+		// Only format if it's a valid number and has at least 4 digits in integer part
+		if (!isNaN(num) && Math.abs(Math.floor(num)).toString().length >= 4) {
+			return formatNumber(num);
+		}
+		return match;
+	});
+}
+
 export const create_result_element = (lineData: ExpressionLineData) => {
 	const marker = lineData.inputHidden ? equation_result_collapsed : equation_result_separator;
 
 	let result = lineData.result;
+	// Disable for now, this looks bad with complex results, will needto disable it there
+	// Also need to accept a config variable
+	// result = format_thousands_separator(result, " ");
 
 	if (lineData.displaytotal && !result.includes('total')) {
 		result = lineData.total;
