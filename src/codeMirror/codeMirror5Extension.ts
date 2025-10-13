@@ -1,4 +1,4 @@
-import { ContentScriptContext } from './types';
+import { ContentScriptContext, GlobalConfig } from './types';
 import { LineData, LineDataType, process_all, trim_lines } from './utils/mathUtils';
 import { create_result_element } from './utils/create_result_element';
 import { update_rates as update_rates } from './utils/update_rates';
@@ -52,7 +52,8 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 			else if (lineData.inline)
 				cm.addLineClass(i, 'text', 'math-input-inline');
 
-			const res = create_result_element(lineData);
+			const config: GlobalConfig = cm.state.mathMode.globalConfig;
+			const res = create_result_element(lineData, config);
 
 			// handleMouseEvents gives control of mouse handling for the widget to codemirror
 			// This is necessary to get the cursor to be placed in the right location ofter

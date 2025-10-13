@@ -235,6 +235,15 @@ function math_contains_symbol(parsed: any, name: string) {
 	return filtered.length > 0;
 }
 
+export function format_result(result: any, config: GlobalConfig): any {
+	return math.format(result, {
+		precision: Number(config.precision),
+		lowerExp: Number(config.lowerExp),
+		upperExp: Number(config.precision),
+		notation: config.notation,
+	});
+}
+
 function process_expression_line(line: string, scope: any, config: any, block_total: string): ExpressionLineData {
 	let p = null;
 	let result = '';
@@ -270,12 +279,7 @@ function process_expression_line(line: string, scope: any, config: any, block_to
 			}
 		}
 		// Format the output
-		result = math.format(result, {
-			precision: Number(config.precision),
-			lowerExp: Number(config.lowerExp),
-			upperExp: Number(config.precision),
-			notation: config.notation,
-		});
+		result = format_result(result, config);
 
 		// Attach a name if necessary
 		if (p.name && truthy(config.verbose))

@@ -1,4 +1,4 @@
-import { ContentScriptContext } from "./types";
+import { ContentScriptContext, GlobalConfig } from "./types";
 import type { Decoration, DecorationSet } from '@codemirror/view';
 import type { Text } from '@codemirror/state';
 
@@ -15,7 +15,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 	const { syntaxTree } = require_codemirror_language();
 
 	class MathResultWidget extends WidgetType {
-		public constructor(private lineData: ExpressionLineData) {
+		public constructor(private lineData: ExpressionLineData, private config: GlobalConfig) {
 			super();
 		}
 
@@ -24,7 +24,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 		}
 
 		public toDOM() {
-			return create_result_element(this.lineData);
+			return create_result_element(this.lineData, this.config);
 		}
 	}
 
@@ -64,7 +64,7 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 				}
 
 				const result_widget_decoration = Decoration.widget({
-					widget: new MathResultWidget(data),
+					widget: new MathResultWidget(data, global_config),
 					side: 1,
 					block: !data.inline,
 				});

@@ -1,5 +1,6 @@
+import { GlobalConfig } from '../types';
 import { equation_result_collapsed, equation_result_separator } from "../constants";
-import { ExpressionLineData } from "./mathUtils";
+import { ExpressionLineData, format_result } from "./mathUtils";
 
 
 // Font Awesome clipboard regular
@@ -34,7 +35,7 @@ const format_thousands_separator = (
 	});
 }
 
-export const create_result_element = (lineData: ExpressionLineData) => {
+export const create_result_element = (lineData: ExpressionLineData, config: GlobalConfig) => {
 	const marker = lineData.inputHidden ? equation_result_collapsed : equation_result_separator;
 
 	let result = lineData.result;
@@ -43,7 +44,7 @@ export const create_result_element = (lineData: ExpressionLineData) => {
 	// result = format_thousands_separator(result, " ");
 
 	if (lineData.displaytotal && !result.includes('total')) {
-		result = lineData.total;
+		result = format_result(lineData.total, config);
 	}
 
 	const res = document.createElement('div');
