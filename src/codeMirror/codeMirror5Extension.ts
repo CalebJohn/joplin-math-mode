@@ -1,7 +1,7 @@
-import { ContentScriptContext, GlobalConfig } from './types';
-import { LineData, LineDataType, process_all, trim_lines } from './utils/mathUtils';
+import { ContentScriptContext, GlobalConfig } from '../shared/types';
+import { LineData, LineDataType, process_all, trim_lines } from '../shared/utils/mathUtils';
 import { create_result_element } from './utils/create_result_element';
-import { update_rates as update_rates } from './utils/update_rates';
+import { update_rates as update_rates } from '../shared/utils/update_rates';
 
 export function codeMirror5Extension(CodeMirror: any, context: ContentScriptContext) {
 	function reprocess(cm: any) {
@@ -165,7 +165,9 @@ export function codeMirror5Extension(CodeMirror: any, context: ContentScriptCont
 			};
 
 			if (globalConfig.currency) {
-				update_rates_and_rerender();
+				update_rates_and_rerender().catch(err => {
+					console.error('Failed to update exchange rates:', err);
+				});
 			}
 			reprocess(cm);
 			// We need to process all blocks on the next update

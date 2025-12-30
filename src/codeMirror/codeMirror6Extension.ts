@@ -1,12 +1,12 @@
-import { ContentScriptContext, GlobalConfig } from "./types";
+import { ContentScriptContext, GlobalConfig } from "../shared/types";
 import type { Decoration, DecorationSet } from '@codemirror/view';
 import type { Text } from '@codemirror/state';
 
 import { require_codemirror_view, require_codemirror_state, require_codemirror_language } from "./utils/requires";
-import { ExpressionLineData, lineDataEqual, LineDataType, process_all } from "./utils/mathUtils";
+import { ExpressionLineData, lineDataEqual, LineDataType, process_all } from "../shared/utils/mathUtils";
 import { create_result_element } from "./utils/create_result_element";
-import { update_rates } from "./utils/update_rates";
-import { block_math_regex, inline_math_regex } from "./constants";
+import { update_rates } from "../shared/utils/update_rates";
+import { block_math_regex, inline_math_regex } from "../shared/constants";
 
 
 export const codeMirror6Extension = async (editorControl: any, context: ContentScriptContext) => {
@@ -185,6 +185,8 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 				editorControl.editor.dispatch({
 					effects: [ force_refresh_effect.of(true) ]
 				});
+			}).catch(err => {
+				console.error('Failed to update exchange rates:', err);
 			});
 		};
 		update_rates_and_rerender();

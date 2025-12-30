@@ -2,25 +2,9 @@ import joplin from 'api';
 import { ContentScriptType } from 'api/types';
 import { MenuItemLocation } from 'api/types';
 import { SettingItemType } from 'api/types';
+import { defaultConfig, getGlobalConfig } from './shared/utils/config';
 
 const contentScriptId = 'literate-math-mode';
-
-const defaultConfig = {
-	global: false,
-	simplify: false,
-	bignumber: false,
-	copyButton: true,
-	displaytotal: false,
-	hide: false,
-	verbose: true,
-	inline: true,
-	notation: 'auto',
-	lowerExp: -3,
-	precision: 8,
-	align: 'left',
-	inlinesyntax: true,
-	currency: true,
-};
 
 
 joplin.plugins.register({
@@ -131,28 +115,23 @@ joplin.plugins.register({
 			'./codeMirror/mathMode.js'
 		);
 
+		// Register markdown-it plugin for viewer rendering
+		await joplin.contentScripts.register(
+			ContentScriptType.MarkdownItPlugin,
+			'literate-math-mode-viewer',
+			'./markdownIt/mathModePlugin.js'
+		);
+
 		// // // // // // // // // // // // // // //
 		// Register Content Script Messaging
 		// // // // // // // // // // // // // // //
 
 		await joplin.contentScripts.onMessage(contentScriptId, async (message:any) => {
 			if (message.name === 'getConfig') {
-				return {
-					global: defaultConfig.global ? 'yes' : 'no',
-					simplify: defaultConfig.simplify ? 'yes' : 'no',
-					bignumber: await joplin.settings.value('bignumber') ? 'yes': 'no',
-					displaytotal: defaultConfig.displaytotal ? 'yes' : 'no',
-					hide: defaultConfig.hide ? 'yes' : 'no',
-					verbose: await joplin.settings.value('verbose') ? 'yes': 'no',
-					inline: await joplin.settings.value('inline') ? 'yes': 'no',
-					notation: await joplin.settings.value('notation'),
-					lowerExp: await joplin.settings.value('lowerExp'),
-					precision: await joplin.settings.value('precision'),
-					align: await joplin.settings.value('align'),
-					inlinesyntax: await joplin.settings.value('inlinesyntax'),
-					copyButton: await joplin.settings.value('copyButton'),
-					currency: await joplin.settings.value('currency'),
-				};
+				// We need to wrap the value fetching in a closure so that the proper
+				// context is available to the value function (can't pass it directly
+				// for some javascript reason)
+				return await getGlobalConfig((key) => joplin.settings.value(key));
 			}
 
 			return "Error: " + message + " is not a valid message";

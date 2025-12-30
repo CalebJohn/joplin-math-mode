@@ -14,12 +14,12 @@ export interface GlobalConfig {
 	verbose: YesOrNo,
 	inline: YesOrNo,
 	notation: string,
-	lowerExp: string,
-	precision: string,
+	lowerExp: number,
+	precision: number,
 	align: string,
 	inlinesyntax: boolean,
 	copyButton: boolean,
-	currency: string,
+	currency: boolean,
 }
 
 export interface PluginState {

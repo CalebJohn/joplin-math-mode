@@ -1,5 +1,6 @@
 {
 	"extraScripts": [
-		"codeMirror/mathMode.ts"
+		"codeMirror/mathMode.ts",
+		"markdownIt/mathModePlugin.ts"
 	]
 }

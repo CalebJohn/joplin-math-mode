@@ -1,6 +1,6 @@
-import { GlobalConfig } from '../types';
-import { equation_result_collapsed, equation_result_separator } from "../constants";
-import { ExpressionLineData, format_result } from "./mathUtils";
+import { GlobalConfig } from '../../shared/types';
+import { equation_result_collapsed, equation_result_separator } from "../../shared/constants";
+import { ExpressionLineData, format_result } from "../../shared/utils/mathUtils";
 
 
 // Font Awesome clipboard regular

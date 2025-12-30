@@ -1,6 +1,6 @@
 import { codeMirror5Extension } from "./codeMirror5Extension";
 import { codeMirror6Extension } from "./codeMirror6Extension";
-import { ContentScriptContext } from "./types";
+import { ContentScriptContext } from "../shared/types";
 
 module.exports = {
 	default: function(context: ContentScriptContext) {
