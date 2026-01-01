@@ -62,7 +62,7 @@ module.exports = {
 					html += 'data-joplin-source-close="\n```">';
 					html += escapedSource;
 					html += '</pre>\n';
-					html += renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig, markdownIt.utils.escapeHtml);
+					html += renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig, markdownIt);
 
 					html += '</div>\n';
 
@@ -100,7 +100,7 @@ module.exports = {
 											for (let lineNum = startLine; lineNum < endLine; lineNum++) {
 												if (lineData[lineNum] && lineData[lineNum].type === LineDataType.Expression) {
 													hasAnyMathLines = true;
-													combinedHtml += renderExpressionLine(srcLines[lineNum], lineData[lineNum], globalConfig, markdownIt.utils.escapeHtml, false);
+													combinedHtml += renderExpressionLine(srcLines[lineNum], lineData[lineNum], globalConfig, markdownIt, false);
 												}
 											}
 

@@ -3,7 +3,7 @@ import { GlobalConfig } from '../shared/types';
 import { equation_result_collapsed, equation_result_separator, inline_math_regex } from '../shared/constants';
 
 
-export function renderExpressionLine(inputLine: string, lineData: ExpressionLineData, config: GlobalConfig, escapeHtml: (s: string) => string, inBlock: boolean): string {
+export function renderExpressionLine(inputLine: string, lineData: ExpressionLineData, config: GlobalConfig, markdownIt: any, inBlock: boolean): string {
 	if (lineData.resultHidden && lineData.inputHidden) {
 		return '';
 	}
@@ -16,8 +16,8 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 	}
 
 	// Escape HTML to prevent XSS
-	const escapedResult = escapeHtml(result);
-	const escapedInput = escapeHtml(inputLine.trim());
+	const escapedResult = markdownIt.utils.escapeHtml(result);
+	const escapedInput = markdownIt.utils.escapeHtml(inputLine.trim());
 
 	const classes = ['math-result'];
 	if (lineData.alignRight) {
@@ -31,7 +31,7 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 
 	if (lineData.inline && !lineData.inputHidden) {
 		// Remove the leading = from inline math expressions
-		const strippedInput = escapeHtml(inputLine.replace(inline_math_regex, ''));
+		const strippedInput = markdownIt.utils.escapeHtml(inputLine.replace(inline_math_regex, ''));
 		html += `<span class="math-input-inline">${strippedInput}</span>`;
 	}
 
@@ -46,7 +46,7 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 	}
 }
 
-export function renderMathBlock(lines: string[], lineDataArray: any[], startLine: number, config: GlobalConfig, escapeHtml: (s: string) => string): string {
+export function renderMathBlock(lines: string[], lineDataArray: any[], startLine: number, config: GlobalConfig, markdownIt: any): string {
 	let html = '';
 
 	for (let i = 0; i < lines.length; i++) {
@@ -54,7 +54,12 @@ export function renderMathBlock(lines: string[], lineDataArray: any[], startLine
 		const lineData = lineDataArray[startLine + i];
 
 		if (lineData && lineData.type === LineDataType.Expression) {
-			html += renderExpressionLine(line, lineData as ExpressionLineData, config, escapeHtml, true);
+			html += renderExpressionLine(line, lineData as ExpressionLineData, config, markdownIt, true);
+		} else if (!lineData || lineData.type !== LineDataType.Config) {
+			if (line.trim()) {
+				const rendered = markdownIt.renderInline(line);
+				html += `<div class="math-passthrough-line">${rendered}</div>`;
+			}
 		}
 	}
 
