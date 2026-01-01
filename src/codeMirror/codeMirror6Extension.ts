@@ -176,6 +176,22 @@ export const codeMirror6Extension = async (editorControl: any, context: ContentS
 			'& .math-result.math-inline': {
 				display: 'inline',
 			},
+			// Copy some of the copy-tooltop css here so that it works in the popped out windows
+			'& .math-result .math-copy-tooltip': {
+				opacity: 0,
+				transition: 'opacity 0.2s ease',
+			},
+			'& .math-result .math-copy-tooltip > svg': {
+				height: '1em',
+				marginLeft: '6px',
+				display: 'inline-block',
+			},
+			'& .math-copy-button:hover': {
+				cursor: 'pointer',
+			},
+			'& .math-copy-button:hover + .math-copy-tooltip': {
+				opacity: '1',
+			},
 		}),
 	]);
 
