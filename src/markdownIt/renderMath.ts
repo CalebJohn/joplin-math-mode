@@ -17,7 +17,7 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 
 	// Escape HTML to prevent XSS
 	const escapedResult = escapeHtml(result);
-	const escapedInput = escapeHtml(inputLine);
+	const escapedInput = escapeHtml(inputLine.trim());
 
 	const classes = ['math-result'];
 	if (lineData.alignRight) {
@@ -39,12 +39,11 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 		html += `<div class="${classes.join(' ')}">${marker}${escapedResult}</div>`;
 	}
 
-	return `<div class="math-expression-line">${html}</div>`;
-	// if (inBlock) {
-	// 	return html;
-	// } else {
-		// return `<div class="joplin-editable"><pre class="joplin-source" data-joplin-language="math" data-joplin-source-open="\`\`\`math\n" data-joplin-source-close="\`\`\`">${escapedInput}</pre>${html}</div>`;
-	// }
+	if (inBlock) {
+		return `<div class="math-expression-line">${html}</div>`;
+	} else {
+		return `<div class="joplin-editable math-expression-line"><pre class="joplin-source" data-joplin-language="math" data-joplin-source-open="\`\`\`math\n" data-joplin-source-close="\n\`\`\`">${escapedInput}</pre>${html}</div>`;
+	}
 }
 
 export function renderMathBlock(lines: string[], lineDataArray: any[], startLine: number, config: GlobalConfig, escapeHtml: (s: string) => string): string {

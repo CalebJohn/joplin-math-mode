@@ -52,17 +52,16 @@ module.exports = {
 						return '<div>Error: Malformed math block</div>\n';
 					}
 
-					const escapedSource = markdownIt.utils.escapeHtml(token.content);
+					const escapedSource = markdownIt.utils.escapeHtml(token.content.trim());
 
-					let html = '<div class="math-block">\n';
-					// let html = '<div class="joplin-editable math-block">\n';
+					let html = '<div class="joplin-editable math-block">\n';
 
-					// html += '<pre class="joplin-source" ';
-					// html += 'data-joplin-language="math" ';
-					// html += 'data-joplin-source-open="```math\n" ';
-					// html += 'data-joplin-source-close="```">';
-					// html += escapedSource;
-					// html += '</pre>\n';
+					html += '<pre class="joplin-source" ';
+					html += 'data-joplin-language="math" ';
+					html += 'data-joplin-source-open="```math\n" ';
+					html += 'data-joplin-source-close="\n```">';
+					html += escapedSource;
+					html += '</pre>\n';
 					html += renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig, markdownIt.utils.escapeHtml);
 
 					html += '</div>\n';
