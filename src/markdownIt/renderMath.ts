@@ -1,6 +1,6 @@
 import { ExpressionLineData, format_result, LineDataType } from '../shared/utils/mathUtils';
 import { GlobalConfig } from '../shared/types';
-import { equation_result_collapsed, equation_result_separator } from '../shared/constants';
+import { equation_result_collapsed, equation_result_separator, inline_math_regex } from '../shared/constants';
 
 
 export function renderExpressionLine(inputLine: string, lineData: ExpressionLineData, config: GlobalConfig, escapeHtml: (s: string) => string, inBlock: boolean): string {
@@ -30,7 +30,9 @@ export function renderExpressionLine(inputLine: string, lineData: ExpressionLine
 	let html = '';
 
 	if (lineData.inline && !lineData.inputHidden) {
-		html += `<span class="math-input-inline">${escapedInput}</span>`;
+		// Remove the leading = from inline math expressions
+		const strippedInput = escapeHtml(inputLine.replace(inline_math_regex, ''));
+		html += `<span class="math-input-inline">${strippedInput}</span>`;
 	}
 
 	if (!lineData.resultHidden) {

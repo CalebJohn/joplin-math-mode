@@ -54,6 +54,7 @@ module.exports = {
 
 					const escapedSource = markdownIt.utils.escapeHtml(token.content);
 
+					let html = '<div class="math-block">\n';
 					// let html = '<div class="joplin-editable math-block">\n';
 
 					// html += '<pre class="joplin-source" ';
@@ -62,10 +63,9 @@ module.exports = {
 					// html += 'data-joplin-source-close="```">';
 					// html += escapedSource;
 					// html += '</pre>\n';
-					// html += renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig);
-					// html += '</div>\n';
-					//
-					const html = renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig, markdownIt.utils.escapeHtml);
+					html += renderMathBlock(fenceLines, env.mathDocumentData.lineData, startLine, globalConfig, markdownIt.utils.escapeHtml);
+
+					html += '</div>\n';
 
 					return html;
 				};
@@ -148,6 +148,9 @@ module.exports = {
 										}
 										.math-block {
 											margin: 1em 0;
+											border: 1px solid black;
+											border-radius: 3px;
+											padding: 4px;
 										}
 										.joplin-editable {
 											position: relative;
