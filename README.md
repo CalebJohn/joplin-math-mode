@@ -36,6 +36,8 @@ View all examples in [the examples folder](https://github.com/CalebJohn/joplin-m
 
 Plus [many more functions](https://mathjs.org/docs/reference/functions.html) provided by mathjs.
 
+# Editor Support
+Math Mode works in the **Markdown Editor**, **Viewer**, and **Rich Text Editor**. Note that the `inline` configuration option (which places results on the same line as expressions) is not supported in the Rich Text Editor. Inline math expressions will render in the Rich Text Editor, but will be converted into HTML if saved.
 
 # Installation
 - Go to `Tools -> Options -> Plugins`(macOS: Joplin -> Preferences -> Plugins)
@@ -78,7 +80,7 @@ Where
 
 `verbose` determines if just the result of the expression should be shown, or the variable name as well.
 
-`inline` should the result be placed on the same line as the expression, or below.
+`inline` should the result be placed on the same line as the expression, or below. Note: inline mode is not supported in the Rich Text Editor.
 
 `notation` passed to the [mathjs format function](https://mathjs.org/docs/reference/functions/format.html#where), this is the numerical format to use for results.
 
@@ -86,17 +88,12 @@ Where
 
 `align` place the result on the left or right of the editor window.
 
-# Roadmap
-### TODO
-- [ ] Add a markdown-It renderer plugin to get the output on both views
-- [x] Add syntax or a method for sum calculations
-- [x] Add configuration to settings menu
-
 ### Ideas
 There is no plan to implement any of these ideas, but there might be eventually.
 - [ ] Support input in latex format (and maybe in $...$)
 		- Maybe also support just saving math into a latex format (this is easier with mathjs)
 - [ ] Fix math mode greedily highlighting after \`\`\`math (probably need a custom mode)
+- [ ] Add ability to read math that's inside of paragraphs. e.g. "I paid for a coffee (price = $1)"
 
 
 ---
