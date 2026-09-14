@@ -1,6 +1,6 @@
 import { processDocumentMath } from './processDocument';
 import { renderMathBlock, renderExpressionLine } from './renderMath';
-import { update_rates } from '../shared/utils/update_rates';
+import { load_cached_rates, update_rates } from '../shared/utils/update_rates';
 import { LineDataType, process_next, defaultProcessContext } from '../shared/utils/mathUtils';
 import { getGlobalConfigSync } from '../shared/utils/config';
 import { inline_math_regex } from '../shared/constants';
@@ -12,6 +12,10 @@ module.exports = {
 				const globalConfig = getGlobalConfigSync(options.settingValue);
 
 				if (globalConfig.currency) {
+					// Rendering is synchronous, so apply the cached rates first —
+					// that's the only way the first note of a session has currency
+					// units. Then refresh the cache in the background for later renders.
+					load_cached_rates();
 					update_rates().catch(err => {
 						console.error('Failed to load exchange rates:', err);
 					});
